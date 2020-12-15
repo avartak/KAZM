@@ -13,6 +13,9 @@ namespace kazm {
     {
         for (std::size_t i = 0; i < pn.size(); i++) param_names.push_back(pn[i]);
         for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(pn[i]);
+        for (std::size_t i = 0; i < param_names.size(); i++) param_map[param_names[i]] = i;
+        for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
+
     }
 
     Gate::Gate(const std::string& n, std::size_t p, std::size_t b):
@@ -20,6 +23,25 @@ namespace kazm {
         nparams(p),
         nqubits(b)
     {
+    }
+
+    void Gate::setupPStack() {
+
+        for (std::size_t i = 0; i < ops.size(); i++) {
+            if (ops[i]->isUnary()) {
+                auto uop = dynamic_cast<UnaryOp*>(ops[i].get());
+                pstack.push_back(std::make_shared<UnaryExpression>(uop->op, pstack[uop->exp]));
+            }
+            else if (ops[i]->isBinary()) {
+                auto bop = dynamic_cast<BinaryOp*>(ops[i].get());
+                pstack.push_back(std::make_shared<BinaryExpression>(bop->op, pstack[bop->lhs], pstack[bop->rhs]));
+            }
+            else {
+                auto cop = dynamic_cast<ConstOp*>(ops[i].get());
+                pstack.push_back(std::make_shared<Constant>(cop->val));
+            }
+        }
+
     }
 
     std::string Gate::str() {

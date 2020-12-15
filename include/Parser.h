@@ -46,13 +46,15 @@ namespace kazm {
         std::size_t parseInclude(std::size_t) throw (Exception);
         std::size_t parseRegDeclaration(std::size_t) throw (Exception);
         std::size_t parseOpaqueDeclaration(std::size_t) throw (Exception);
+        std::size_t parseGateDefinition(std::size_t) throw (Exception);
         std::size_t parseProgramStatement(std::size_t) throw (Exception);
 
         std::size_t parseQubitReg(std::size_t, std::shared_ptr<Data>&) throw (Exception);
         std::size_t parseBitReg(std::size_t, std::shared_ptr<Data>&) throw (Exception);
         std::size_t parseQubitRegList(std::size_t, std::vector<std::size_t>&) throw (Exception);
-        std::size_t parseExp(std::size_t, std::shared_ptr<Expression>&) throw (Exception);
+        std::size_t parseQubitList(std::size_t, const Gate&, std::vector<std::size_t>&) throw (Exception);
         std::size_t parseExpList(std::size_t, std::vector<std::size_t>&) throw (Exception);
+        std::size_t parseExpList(std::size_t, Gate&, std::vector<std::size_t>&) throw (Exception);
 
         bool checkQubitRegList(const std::vector<std::size_t>&);
     };

@@ -9,28 +9,7 @@
 
 namespace kazm {
 
-    void Program::setupPStack() {
-
-        for (std::size_t i = 0; i < ops.size(); i++) {
-            if (ops[i]->isUnary()) {
-                auto uop = dynamic_cast<UnaryOp*>(ops[i].get());
-                pstack.push_back(std::make_shared<UnaryExpression>(uop->op, pstack[uop->exp]));
-            }            
-            else if (ops[i]->isBinary()) {
-                auto bop = dynamic_cast<BinaryOp*>(ops[i].get());
-                pstack.push_back(std::make_shared<BinaryExpression>(bop->op, pstack[bop->lhs], pstack[bop->rhs]));
-            }
-            else {
-                auto cop = dynamic_cast<ConstOp*>(ops[i].get());
-                pstack.push_back(std::make_shared<Constant>(cop->val));
-            }        
-        }        
-
-    }
-
     std::string Program::str() {
-
-        setupPStack();
 
         std::stringstream ss;
 
@@ -47,8 +26,6 @@ namespace kazm {
     }
 
     void Program::run() {
-
-        setupPStack();
 
         for (std::size_t i = 0; i < instructions.size(); i++) {
             instructions[i]->execute();
