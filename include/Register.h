@@ -25,6 +25,7 @@ namespace kazm {
             virtual std::size_t offset() override;
             virtual bool isReg() override;
 
+            virtual std::string str();
     };
 
 }

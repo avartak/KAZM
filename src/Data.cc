@@ -13,5 +13,4 @@ namespace kazm {
     bool Data::isQuantum() {
         return type() == data_quantum;
     }
-
 }

@@ -27,6 +27,15 @@ namespace kazm {
         return gates.find(name) != gates.end();
     }
 
+    std::string Parser::str() {
+        std::string s = "";
+        for (auto it = cregs.begin(); it != cregs.end(); ++it) s += it->second->str();
+        for (auto it = qregs.begin(); it != qregs.end(); ++it) s += it->second->str();
+        for (auto it = gates.begin(); it != gates.end(); ++it) s += it->second->str();
+        s += program.str();
+        return s;
+    }
+
     void Parser::parse(const std::string& filename) throw (Exception) {
     
         files.push_back(std::make_shared<SourceFile>(filename));

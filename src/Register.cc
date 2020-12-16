@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include <Register.h>
 
 namespace kazm {
@@ -28,6 +30,13 @@ namespace kazm {
 
     bool Register::isReg() {
         return true;
+    }
+
+    std::string Register::str() {
+        std::stringstream ss;
+        ss << (isClassical() ? "Classical register " : "Quantum register "); 
+        ss << name() << "(size : " << size() << ", offset : " << offset() << ")" << std::endl;
+        return ss.str();
     }
 
 }

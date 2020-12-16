@@ -36,6 +36,8 @@ namespace kazm {
         bool isQReg(const std::string&);
         bool isCReg(const std::string&);
         bool isGate(const std::string&);
+
+        std::string str();
         
         void parse(const std::string&) throw (Exception);
 

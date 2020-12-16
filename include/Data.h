@@ -23,7 +23,6 @@ namespace kazm {
         virtual bool isBit();
         virtual bool isClassical();
         virtual bool isQuantum();
-
     };
 
 }
