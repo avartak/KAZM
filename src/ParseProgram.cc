@@ -3,7 +3,6 @@
 #include <Parser.h>
 #include <Instruction.h>
 #include <Bit.h>
-#include <Constant.h>
 
 namespace kazm {
 
@@ -78,56 +77,32 @@ namespace kazm {
             inst = std::make_shared<BarrierInst>(program, qidxv);
         }
 
-        else if (parseToken(T_U, it+n)) {
+        else if (parseToken(T_ID, it+n) || parseToken(T_U, it+n) || parseToken(T_CX, it+n)) {
+            std::string gname = tokens[it+n].value;
+            std::string gate_name = gname;
+            if (parseToken(T_U, it+n)) gate_name = "__u__";
+            if (parseToken(T_CX, it+n)) gate_name = "__cnot__";
             n++;
-            if (!parseToken('(', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \'(\' \'U\'");
-            n++;
-            std::vector<std::size_t> expv;
-            std::vector<std::size_t> qidxv;
-            std::size_t m = parseExpList(it+n, program, expv);
-            if (expv.size() != 3) throw Exception(files.back()->filename, tokens[it+n].line, "Expect three arguments \'U\'");
-            n += m;
-            if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' \'U\' arguments");
-            n++;
-            std::shared_ptr<Data> qubit;
-            m = parseQubitReg(it+n, qubit);
-            if (m == 0 || !qubit || !qubit->isQuantum()) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a qubit/register for \'U\'");
-            n += m;
-            qidxv.push_back(program.bstack.size());
-            program.bstack.push_back(qubit);
-            if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of U gate call");
-            n++;
-            inst = std::make_shared<CallInst>(program, gates["__u__"], expv, qidxv);
-        }
-
-        else if (parseToken(T_CX, it+n)) {
-            n++;
-            std::vector<std::size_t> qidxv;
-            std::size_t m = parseQubitRegList(it+n, qidxv);
-            if (qidxv.size() != 2) throw Exception(files.back()->filename, tokens[it+n].line, "Expect two qubits/registers for \'CX\'");
-            if (!checkQubitRegList(qidxv)) throw Exception(files.back()->filename, tokens[it+n].line, "Overlapping qubits for \'CX\'");
-            n += m;
-            if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of CX gate call");
-            n++;
-            inst = std::make_shared<CallInst>(program, gates["__cnot__"], qidxv);
-        }
-
-        else if (parseToken(T_ID, it+n)) {
-            std::string gate_name = tokens[it+n].value;
-            n++;
-            if (!isGate(gate_name)) throw Exception(files.back()->filename, tokens[it+n].line, gate_name + " is not a gate");
+            if (!isGate(gate_name)) throw Exception(files.back()->filename, tokens[it+n].line, gname + " is not a gate");
             auto gate = gates[gate_name];
             std::vector<std::size_t> expv;
             std::vector<std::size_t> qidxv;
             if (gate->nparams == 0) {
-                if (parseToken('(', it+n)) {
-                    n++;
-                    if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \'(\' after \')\' when calling gate " + gate_name);
-                    n++;
+                if (gate_name == "CX") {
+                    if (parseToken('(', it+n)) {
+                        throw Exception(files.back()->filename, tokens[it+n].line, "Cannot use \'(\' when calling CX gate");
+                    }
+                } 
+                else {
+                    if (parseToken('(', it+n)) {
+                        n++;
+                        if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' after \'(\' when calling gate " + gname);
+                        n++;
+                    }
                 }
             }
             else {
-                if (!parseToken('(', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \'(\' for parameter list when calling gate " + gate_name);
+                if (!parseToken('(', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \'(\' for parameter list when calling gate " + gname);
                 n++;
                 std::size_t m = parseExpList(it+n, program, expv);
                 if (expv.size() != gate->nparams) {
@@ -136,7 +111,7 @@ namespace kazm {
                     throw Exception(files.back()->filename, tokens[it+n].line, ss.str());
                 }
                 n += m;
-                if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' after parameter list for gate " + gate_name);
+                if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' after parameter list for gate " + gname);
                 n++;
             }
             std::size_t m = parseQubitRegList(it+n, qidxv);
@@ -145,9 +120,9 @@ namespace kazm {
                 ss << gate->name << " gate expects " << gate->nparams << " qubits/registers, " << qidxv.size() << " provided";
                 throw Exception(files.back()->filename, tokens[it+n].line, ss.str());
             }
-            if (!checkQubitRegList(qidxv)) throw Exception(files.back()->filename, tokens[it+n].line, "Overlapping qubits for gate " + gate_name);
+            if (!checkQubitRegList(qidxv)) throw Exception(files.back()->filename, tokens[it+n].line, "Overlapping qubits for gate " + gname);
             n += m;
-            if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of call to gate " + gate_name);
+            if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of call to gate " + gname);
             n++;
             inst = std::make_shared<CallInst>(program, gate, expv, qidxv);
         }

@@ -1,8 +1,6 @@
 #include <sstream>
 
 #include <Parser.h>
-#include <Instruction.h>
-#include <Bit.h>
 #include <Constant.h>
 
 namespace kazm {
