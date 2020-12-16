@@ -66,7 +66,19 @@ namespace kazm {
 
         // Clipping the quotation marks from the file name 'string'
         auto filename = tokens[it+1].value.substr(1, tokens[it+1].value.length()-2);
-        parse(filename);
+
+        files.push_back(std::make_shared<SourceFile>(filename));
+
+        std::size_t s = tokens.size();
+
+        tokens.push_back(files.back()->scan());
+        while (tokens[s].type != 0) {
+            auto n = parseUnit(s);
+            tokens.erase(tokens.begin()+s, tokens.begin()+s+n);
+        }
+        tokens.pop_back();
+
+        files.pop_back();
 
         return 3;
 

@@ -5,8 +5,8 @@ namespace kazm {
     std::size_t Parser::parseRegDeclaration(std::size_t it) throw (Exception) {
 
         DataType rt;
-        if (parseToken(T_QREG, it)) rt = data_classical;
-        else if (parseToken(T_CREG, it)) rt = data_quantum;
+        if (parseToken(T_QREG, it)) rt = data_quantum;
+        else if (parseToken(T_CREG, it)) rt = data_classical;
         else return 0;
 
         if (!parseToken(T_ID, it+1) || !parseToken('[', it+2) || !parseToken(T_NNINTEGER, it+3) || !parseToken(']', it+4) || !parseToken(';', it+5)) return 0;
@@ -27,7 +27,7 @@ namespace kazm {
         }
         else {
             if (qubit_space + sz < qubit_space) throw Exception(files.back()->filename, tokens[it+3].line, "Total size of qubit space exceeds limit");
-            qregs[name] = std::make_shared<Register>(data_classical, name, sz, qubit_space);
+            qregs[name] = std::make_shared<Register>(data_quantum, name, sz, qubit_space);
             qubit_space += sz;
         }
 
