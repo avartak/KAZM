@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 
 #include <Exception.h>
 
@@ -42,27 +43,39 @@ namespace kazm {
 
     struct UnaryExpression : public Expression {
 
-        UnaryExpType op;
-        std::shared_ptr<Expression> ex;
+        private:
+            static std::map<std::string, UnaryExpType> type;
 
-        UnaryExpression(UnaryExpType, const std::shared_ptr<Expression>&);
+        public:
+            UnaryExpType op;
+            std::shared_ptr<Expression> ex;
 
-        std::string str() override;
-        double evaluate() throw (Exception) override;
+            UnaryExpression(UnaryExpType, const std::shared_ptr<Expression>&);
 
+            std::string str() override;
+            double evaluate() throw (Exception) override;
+
+            static UnaryExpType GetType(const std::string&);
     };
 
     struct BinaryExpression : public Expression {
 
-        BinaryExpType op;
-        std::shared_ptr<Expression> lhs;
-        std::shared_ptr<Expression> rhs;
+        private:
+            static std::map<std::string, BinaryExpType> type;
+            static std::map<std::string, std::size_t> precedence;
 
-        BinaryExpression(BinaryExpType, const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
-
-        std::string str() override;
-        double evaluate() throw (Exception) override;
-
+        public:
+            BinaryExpType op;
+            std::shared_ptr<Expression> lhs;
+            std::shared_ptr<Expression> rhs;
+            
+            BinaryExpression(BinaryExpType, const std::shared_ptr<Expression>&, const std::shared_ptr<Expression>&);
+            
+            std::string str() override;
+            double evaluate() throw (Exception) override;
+            
+            static BinaryExpType GetType(const std::string&);
+            static std::size_t GetPrecedence(const std::string&);
     };
 
 }

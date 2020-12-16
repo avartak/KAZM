@@ -7,7 +7,6 @@
 
 #include <Program.h>
 #include <Exception.h>
-#include <ExpOps.h>
 
 namespace kazm {
 
@@ -20,7 +19,6 @@ namespace kazm {
         std::vector<std::string> qubit_names;
         std::map<std::string, std::size_t> param_map;
         std::map<std::string, std::size_t> qubit_map;
-        std::vector<std::shared_ptr<ExpOps> > ops;
 
         Gate(const std::string&, const std::vector<std::string>& pn, const std::vector<std::string>& bn);
         Gate(const std::string&, std::size_t, std::size_t);
@@ -29,8 +27,6 @@ namespace kazm {
 
         virtual std::string str() override;
         virtual void execute(const Program&, const std::vector<std::size_t>&, const std::vector<std::size_t>&) throw (Exception);
-
-        void setupPStack();
 
     };
 

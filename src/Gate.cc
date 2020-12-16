@@ -15,6 +15,7 @@ namespace kazm {
         for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(pn[i]);
         for (std::size_t i = 0; i < param_names.size(); i++) param_map[param_names[i]] = i;
         for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
+        for (std::size_t i = 0; i < param_names.size(); i++) pstack.push_back(std::make_shared<Parameter>(param_names[i]));
 
     }
 
@@ -25,30 +26,7 @@ namespace kazm {
     {
     }
 
-    void Gate::setupPStack() {
-
-        for (std::size_t i = 0; i < ops.size(); i++) {
-            if (ops[i]->isUnary()) {
-                auto uop = dynamic_cast<UnaryOp*>(ops[i].get());
-                pstack.push_back(std::make_shared<UnaryExpression>(uop->op, pstack[uop->exp]));
-            }
-            else if (ops[i]->isBinary()) {
-                auto bop = dynamic_cast<BinaryOp*>(ops[i].get());
-                pstack.push_back(std::make_shared<BinaryExpression>(bop->op, pstack[bop->lhs], pstack[bop->rhs]));
-            }
-            else {
-                auto cop = dynamic_cast<ConstOp*>(ops[i].get());
-                pstack.push_back(std::make_shared<Constant>(cop->val));
-            }
-        }
-
-    }
-
     std::string Gate::str() {
-
-        for (std::size_t i = 0; i < param_names.size(); i++) pstack.push_back(std::make_shared<Parameter>(param_names[i]));
-
-        setupPStack();
 
         std::stringstream ss;
 
@@ -101,8 +79,6 @@ namespace kazm {
 
         ss << "\n";
 
-        pstack.clear();
-
         return ss.str();
     }
         
@@ -110,14 +86,18 @@ namespace kazm {
         if (p.size() != nparams) throw Exception("<Internal error Gate::execute()> Incorrect number of parameters passed");    
         if (b.size() != nqubits) throw Exception("<Internal error Gate::execute()> Incorrect number of qubits passed");
 
-        for (std::size_t i = 0; i < p.size(); i++) pstack.push_back(prog.pstack[p[i]]);
+        for (std::size_t i = 0; i < p.size(); i++) {
+            auto par = dynamic_cast<Parameter*>(pstack[i].get());
+            par->value = prog.pstack[p[i]];
+        }
         for (std::size_t i = 0; i < b.size(); i++) bstack.push_back(prog.bstack[b[i]]);
-
-        setupPStack();
 
         for (std::size_t i = 0; i < instructions.size(); i++) instructions[i]->execute();
 
-        pstack.clear();
+        for (std::size_t i = 0; i < p.size(); i++) {
+            auto par = dynamic_cast<Parameter*>(pstack[i].get());
+            par->value.reset();
+        }
         bstack.clear();
     }
 
@@ -175,12 +155,18 @@ namespace kazm {
         if (p.size() != 3) throw Exception("<Internal error UGate::execute()> U gate takes three input parameters");
         if (b.size() != 1) throw Exception("<Internal error UGate::execute()> U gate takes one qubit as input");
 
-        for (std::size_t i = 0; i < p.size(); i++) pstack.push_back(prog.pstack[p[i]]);
+        for (std::size_t i = 0; i < p.size(); i++) {
+            auto par = dynamic_cast<Parameter*>(pstack[i].get());
+            par->value = prog.pstack[p[i]];
+        }
         for (std::size_t i = 0; i < b.size(); i++) bstack.push_back(prog.bstack[b[i]]);
 
         // Do the execution here
 
-        pstack.clear();
+        for (std::size_t i = 0; i < p.size(); i++) {
+            auto par = dynamic_cast<Parameter*>(pstack[i].get());
+            par->value.reset();
+        }
         bstack.clear();
 
     }

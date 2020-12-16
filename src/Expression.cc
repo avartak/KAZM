@@ -4,6 +4,17 @@
 
 namespace kazm {
 
+    std::map<std::string, UnaryExpType> UnaryExpression::type = { 
+        {"+"   , unaryop_nop},
+        {"-"   , unaryop_negate},
+        {"sin" , unaryop_sin},
+        {"cos" , unaryop_cos},
+        {"tan" , unaryop_tan},
+        {"exp" , unaryop_exp},
+        {"ln"  , unaryop_ln},
+        {"sqrt", unaryop_sqrt}
+    };
+
     UnaryExpression::UnaryExpression(UnaryExpType o, const std::shared_ptr<Expression>& e):
         op(o),
         ex(e)
@@ -32,6 +43,27 @@ namespace kazm {
         else return "(" + ex->str() + ")";
     }
 
+    UnaryExpType UnaryExpression::GetType(const std::string& s) {
+
+        return type[s];
+
+    }
+
+    std::map<std::string, BinaryExpType> BinaryExpression::type = { 
+        {"+", binaryop_add},
+        {"-", binaryop_subtract},
+        {"*", binaryop_multiply},
+        {"/", binaryop_divide},
+        {"^", binaryop_raise}
+    };
+    std::map<std::string, std::size_t> BinaryExpression::precedence = {
+        {"+", 100},
+        {"-", 100},
+        {"*", 200},
+        {"/", 200},
+        {"^", 400}
+    };
+
     BinaryExpression::BinaryExpression(BinaryExpType o, const std::shared_ptr<Expression>& l, const std::shared_ptr<Expression>& r):
         op(o),
         lhs(l),
@@ -54,4 +86,17 @@ namespace kazm {
         else if (op == binaryop_divide) return lhs->str() + " / " + rhs->str();
         else return lhs->str() + " ^ " + rhs->str();
     }
+
+    BinaryExpType BinaryExpression::GetType(const std::string& s) {
+
+        return type[s];
+
+    }
+
+    std::size_t BinaryExpression::GetPrecedence(const std::string& s) {
+
+        return precedence[s];
+
+    }
+
 }

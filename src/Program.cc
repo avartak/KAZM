@@ -4,7 +4,6 @@
 #include <Data.h>
 #include <Expression.h>
 #include <Constant.h>
-#include <ExpOps.h>
 #include <Instruction.h>
 
 namespace kazm {
