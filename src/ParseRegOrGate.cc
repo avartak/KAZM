@@ -2,6 +2,7 @@
 
 #include <Parser.h>
 #include <Instruction.h>
+#include <Expression.h>
 
 namespace kazm {
 
@@ -162,7 +163,7 @@ namespace kazm {
                 std::size_t m = parseQubitList(it+n, *gate, qidxv);
                 if (qidxv.size() != gt->nqubits) {
                     std::stringstream ss;
-                    ss << gt->name << " gate expects " << gt->nparams << " qubits, " << qidxv.size() << " provided";
+                    ss << gt->name << " gate expects " << gt->nqubits << " qubits, " << qidxv.size() << " provided";
                     throw Exception(files.back()->filename, tokens[it+n].line, ss.str());
                 }
                 n += m;
@@ -199,7 +200,7 @@ namespace kazm {
 
         if (!parseToken(T_ID, it)) return 0;
         auto qid = tokens[it].value;
-        if (qmap.find(qid) != qmap.end()) return 0; 
+        if (qmap.find(qid) == qmap.end()) return 0; 
         qidxv.push_back(qmap[qid]);
         n++;
 
@@ -208,7 +209,7 @@ namespace kazm {
             if (!parseToken(',', it+n)) return n;
             n++;
             if (!parseToken(T_ID, it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a qubit after \',\'");
-            if (qmap.find(qid) != qmap.end()) throw Exception(files.back()->filename, tokens[it+n].line, "Unknown qubit argument");
+            if (qmap.find(qid) == qmap.end()) throw Exception(files.back()->filename, tokens[it+n].line, "Unknown qubit argument");
             for (std::size_t i = 0; i < qidxv.size(); i++) {
                 if (qidxv[i] == qmap[qid]) throw Exception(files.back()->filename, tokens[it+n].line, "Qubit argument " + qid + " is repeated");
             }

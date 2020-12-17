@@ -100,7 +100,7 @@ class Scanner : public reflex::AbstractLexer<reflex::Matcher> {
 
 kazm::Token kazm::Scanner::scan(void)
 {
-  static const char *REGEX_INITIAL = "(?m)((?:[\\x09-\\x0d\\x20])+)|((?:\\Q//\\E).*)|((?:\\QOPENQASM\\E)(?:[\\x09\\x20])+(?:(?:(?:\\Q0\\E)|[1-9]+(?:[0-9])*))(?:\\Q.\\E)(?:(?:(?:\\Q0\\E)|[1-9]+(?:[0-9])*))(?:[\\x09\\x20])*(?:\\Q;\\E))|((?:\\Q{\\E))|((?:\\Q}\\E))|((?:\\Q[\\E))|((?:\\Q]\\E))|((?:\\Q(\\E))|((?:\\Q)\\E))|((?:\\Q,\\E))|((?:\\Q;\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q*\\E))|((?:\\Q/\\E))|((?:\\Q^\\E))|((?:\\Q->\\E))|((?:\\Q==\\E))|((?:\\Qif\\E))|((?:\\Qpi\\E))|((?:\\Qsin\\E))|((?:\\Qcos\\E))|((?:\\Qtan\\E))|((?:\\Qexp\\E))|((?:\\Qln\\E))|((?:\\Qsqrt\\E))|((?:\\Qqreg\\E))|((?:\\Qcreg\\E))|((?:\\Qgate\\E))|((?:\\Qopaque\\E))|((?:\\Qbarrier\\E))|((?:\\Qmeasure\\E))|((?:\\Qreset\\E))|((?:\\QU\\E))|((?:\\QCX\\E))|((?:\\Qinclude\\E))|((?:(?:(?:\\Q0\\E)|[1-9]+(?:[0-9])*)))|((?:[0-9])+(?:\\Q.\\E)(?:[0-9])*(?:(?:[Ee][\\x2b\\x2d]?(?:[0-9])+))?)|((?:[0-9])*(?:\\Q.\\E)(?:[0-9])+(?:(?:[Ee][\\x2b\\x2d]?(?:[0-9])+))?)|([a-z][0-9A-Z_a-z]*)|(\"[^\"]+\")|(.)";
+  static const char *REGEX_INITIAL = "(?m)((?:[\\x09-\\x0d\\x20])+)|((?:\\Q//\\E).*)|((?:\\QOPENQASM\\E)(?:[\\x09\\x20])+(?:(?:(?:\\Q0\\E)|[1-9]+(?:[0-9])*))(?:\\Q.\\E)(?:(?:(?:\\Q0\\E)|[1-9]+(?:[0-9])*))(?:[\\x09\\x20])*(?:\\Q;\\E))|((?:\\Q{\\E))|((?:\\Q}\\E))|((?:\\Q[\\E))|((?:\\Q]\\E))|((?:\\Q(\\E))|((?:\\Q)\\E))|((?:\\Q,\\E))|((?:\\Q;\\E))|((?:\\Q+\\E))|((?:\\Q-\\E))|((?:\\Q*\\E))|((?:\\Q/\\E))|((?:\\Q^\\E))|((?:\\Q->\\E))|((?:\\Q==\\E))|((?:\\Qif\\E))|((?:\\Qpi\\E))|((?:\\Qsin\\E))|((?:\\Qcos\\E))|((?:\\Qtan\\E))|((?:\\Qexp\\E))|((?:\\Qln\\E))|((?:\\Qsqrt\\E))|((?:\\Qqreg\\E))|((?:\\Qcreg\\E))|((?:\\Qgate\\E))|((?:\\Qopaque\\E))|((?:\\Qbarrier\\E))|((?:\\Qmeasure\\E))|((?:\\Qreset\\E))|((?:\\QU\\E))|((?:\\QCX\\E))|((?:\\Qinclude\\E))|((?:(?:(?:\\Q0\\E)|[1-9]+(?:[0-9])*)))|((?:[0-9])+(?:(?:[Ee][\\x2b\\x2d]?(?:[0-9])+)))|((?:[0-9])+(?:\\Q.\\E)(?:[0-9])*(?:(?:[Ee][\\x2b\\x2d]?(?:[0-9])+))?)|((?:[0-9])*(?:\\Q.\\E)(?:[0-9])+(?:(?:[Ee][\\x2b\\x2d]?(?:[0-9])+))?)|([a-z][0-9A-Z_a-z]*)|(\"[^\"]+\")|(.)";
   static const reflex::Pattern PATTERN_INITIAL(REGEX_INITIAL);
   if (!has_matcher())
   {
@@ -234,20 +234,23 @@ kazm::Token kazm::Scanner::scan(void)
           case 37: // rule src/lexer.l:60: {I} :
 { RETURN(T_NNINTEGER); }
             break;
-          case 38: // rule src/lexer.l:61: {D}+"."{D}*{E}? :
+          case 38: // rule src/lexer.l:61: {D}+{E} :
 { RETURN(T_REAL); }
             break;
-          case 39: // rule src/lexer.l:62: {D}*"."{D}+{E}? :
+          case 39: // rule src/lexer.l:62: {D}+"."{D}*{E}? :
 { RETURN(T_REAL); }
             break;
-          case 40: // rule src/lexer.l:63: [a-z][a-zA-Z_0-9]* :
+          case 40: // rule src/lexer.l:63: {D}*"."{D}+{E}? :
+{ RETURN(T_REAL); }
+            break;
+          case 41: // rule src/lexer.l:64: [a-z][a-zA-Z_0-9]* :
 { RETURN(T_ID); }
             break;
-          case 41: // rule src/lexer.l:64: \"[^\"]+\" :
+          case 42: // rule src/lexer.l:65: \"[^\"]+\" :
 { RETURN(T_FILENAME); }
 
             break;
-          case 42: // rule src/lexer.l:66: . :
+          case 43: // rule src/lexer.l:67: . :
 { RETURN(T_UNDEF); }
             break;
         }

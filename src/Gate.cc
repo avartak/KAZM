@@ -12,7 +12,7 @@ namespace kazm {
         nqubits(bn.size())
     {
         for (std::size_t i = 0; i < pn.size(); i++) param_names.push_back(pn[i]);
-        for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(pn[i]);
+        for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(bn[i]);
         for (std::size_t i = 0; i < param_names.size(); i++) param_map[param_names[i]] = i;
         for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
         for (std::size_t i = 0; i < param_names.size(); i++) pstack.push_back(std::make_shared<Parameter>(param_names[i]));
@@ -104,6 +104,10 @@ namespace kazm {
     IdentityGate::IdentityGate():
         Gate("__identity__", 0, 1)
     {
+        std::vector<std::string> bn;
+        bn.push_back("q0");
+        for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(bn[i]);
+        for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
     }
 
     std::string IdentityGate::str() {
@@ -124,6 +128,13 @@ namespace kazm {
     CNOTGate::CNOTGate():
         Gate("__cnot__", 0, 2)
     {
+        std::vector<std::string> bn;
+
+        bn.push_back("q0");
+        bn.push_back("q1");
+
+        for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(bn[i]);
+        for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
     }
 
     std::string CNOTGate::str() {
@@ -145,6 +156,19 @@ namespace kazm {
     UGate::UGate():
         Gate("__u__", 3, 1)
     {
+        std::vector<std::string> pn;
+        std::vector<std::string> bn;
+
+        pn.push_back("theta");
+        pn.push_back("phi");
+        pn.push_back("lamba");
+        bn.push_back("q0");
+
+        for (std::size_t i = 0; i < pn.size(); i++) param_names.push_back(pn[i]);
+        for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(bn[i]);
+        for (std::size_t i = 0; i < param_names.size(); i++) param_map[param_names[i]] = i;
+        for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
+        for (std::size_t i = 0; i < param_names.size(); i++) pstack.push_back(std::make_shared<Parameter>(param_names[i]));
     }
 
     std::string UGate::str() {

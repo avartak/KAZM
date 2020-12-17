@@ -19,7 +19,7 @@ namespace kazm {
 
             if (!parseToken(',', it+n)) return n;
             n++;
-            if ( (m = parseExp(it, prog, exp)) == 0 || !exp) throw Exception(files.back()->filename, tokens[it+n].line, "Expecting a parameter/expression after \',\'");
+            if ( (m = parseExp(it+n, prog, exp)) == 0 || !exp) throw Exception(files.back()->filename, tokens[it+n].line, "Expecting a parameter/expression after \',\'");
             n += m;
             ev.push_back(prog.pstack.size());
             prog.pstack.push_back(std::move(exp));
@@ -54,7 +54,8 @@ namespace kazm {
             std::shared_ptr<Expression> rhs;
             m = parseBinaryRHS(it+n, prog, op, rhs);
             if (m == 0 || !rhs) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after " + op);
-            exp = std::make_shared<BinaryExpression>(BinaryExpression::GetType(op), std::move(exp), std::move(rhs)); 
+            exp = std::make_shared<BinaryExpression>(BinaryExpression::GetType(op), std::move(exp), std::move(rhs));
+            n += m;
 
         }
 
@@ -91,7 +92,8 @@ namespace kazm {
             m = parseBinaryRHS(it+n, prog, op, r2);
             if (m == 0 || !r2) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after " + op);
             r1 = std::make_shared<BinaryExpression>(BinaryExpression::GetType(op), std::move(r1), std::move(r2));
-            
+            n += m;            
+
         }
 
     }
@@ -103,7 +105,7 @@ namespace kazm {
 
         std::map<std::string, std::size_t> pmap;
 
-        if (parseToken(T_PI, it) || parseToken(T_REAL, it)) {
+        if (parseToken(T_PI, it) || parseToken(T_REAL, it) || parseToken(T_NNINTEGER, it)) {
             exp = std::make_shared<Constant>(tokens[it].value);
             return 1;
         }

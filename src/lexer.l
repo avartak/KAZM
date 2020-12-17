@@ -58,6 +58,7 @@ W   [ \t\v\n\f\r]
 "include"                           { RETURN(T_INCLUDE); }
 
 {I}                                 { RETURN(T_NNINTEGER); }
+{D}+{E}                             { RETURN(T_REAL); }
 {D}+"."{D}*{E}?                     { RETURN(T_REAL); }
 {D}*"."{D}+{E}?                     { RETURN(T_REAL); }
 [a-z][a-zA-Z_0-9]*                  { RETURN(T_ID); }
