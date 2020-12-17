@@ -24,13 +24,13 @@ namespace kazm {
 
         std::shared_ptr<Header> header;
 
+        std::size_t clbit_space;
+        std::size_t qubit_space;
+        
         std::map<std::string, std::shared_ptr<Register> > cregs;
         std::map<std::string, std::shared_ptr<Register> > qregs;
         std::map<std::string, std::shared_ptr<Gate> > gates;
 
-        std::size_t clbit_space;
-        std::size_t qubit_space;
-        
         Program program;
 
         Parser();
