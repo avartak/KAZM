@@ -9,6 +9,7 @@
 #include <Exception.h>
 #include <SourceFile.h>
 #include <Token.h>
+#include <Header.h>
 #include <Data.h>
 #include <Register.h>
 #include <Gate.h>
@@ -20,6 +21,8 @@ namespace kazm {
 	
         std::vector<std::shared_ptr<SourceFile> > files;
         std::vector<Token> tokens;
+
+        std::shared_ptr<Header> header;
 
         std::map<std::string, std::shared_ptr<Register> > cregs;
         std::map<std::string, std::shared_ptr<Register> > qregs;

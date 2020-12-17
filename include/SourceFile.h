@@ -15,8 +15,6 @@ namespace kazm {
         std::string filename;
         std::ifstream file;
         Scanner lexer;
-        std::size_t major_version;
-        std::size_t minor_version;
         
         SourceFile(const std::string&) throw (Exception);
         

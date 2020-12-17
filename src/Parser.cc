@@ -43,14 +43,16 @@ namespace kazm {
         std::size_t s = tokens.size();
         
         tokens.push_back(files.back()->scan());
-        
-        if (tokens[s].type == 0) return;
-        auto n = parseHeader(s);
-        if (n == 0) throw Exception(filename, tokens[s].line, "Missing header");
-        tokens.erase(tokens.begin()+s, tokens.begin()+s+n);
+
+        if (!header) {        
+            if (tokens[s].type == 0) return;
+            auto n = parseHeader(s);
+            if (n == 0) throw Exception(filename, tokens[s].line, "Missing header");
+            tokens.erase(tokens.begin()+s, tokens.begin()+s+n);
+        }
 
         while (tokens[s].type != 0) {
-            n = parseUnit(s);
+            auto n = parseUnit(s);
             tokens.erase(tokens.begin()+s, tokens.begin()+s+n);
         }
         
