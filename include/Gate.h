@@ -30,32 +30,6 @@ namespace kazm {
 
     };
 
-    struct IdentityGate : public Gate {
-
-        IdentityGate();
-
-        std::string str() override;
-        void execute(const Program&, const std::vector<std::size_t>&, const std::vector<std::size_t>&) throw (Exception) override;
-
-    };
-
-    struct CNOTGate : public Gate {
-
-        CNOTGate();
-
-        std::string str() override;
-        void execute(const Program&, const std::vector<std::size_t>&, const std::vector<std::size_t>&) throw (Exception) override;
-
-    };
-
-    struct UGate : public Gate {
-
-        UGate();
-
-        std::string str() override;
-        void execute(const Program&, const std::vector<std::size_t>&, const std::vector<std::size_t>&) throw (Exception) override;
-
-    };
 }
 
 #endif

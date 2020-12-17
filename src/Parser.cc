@@ -6,9 +6,15 @@ namespace kazm {
         clbit_space(0),
         qubit_space(0)
     {
-        gates["__identity__"] = std::make_shared<IdentityGate>();
-        gates["__cnot__"] = std::make_shared<CNOTGate>();
-        gates["__u__"] = std::make_shared<UGate>();
+        std::vector<std::string> p_id = {};
+        std::vector<std::string> p_cx = {};
+        std::vector<std::string> p_u  = {"theta", "phi", "lambda"};
+        std::vector<std::string> b_id = {"q0"};
+        std::vector<std::string> b_cx = {"q0", "q1"};
+        std::vector<std::string> b_u  = {"q0"};
+        gates["__identity__"] = std::make_shared<Gate>("__identity__", p_id, b_id);
+        gates["__cnot__"] = std::make_shared<Gate>("__cnot__", p_cx, b_cx);
+        gates["__u__"] = std::make_shared<Gate>("__u__", p_u, b_u);
     }
 
     bool Parser::isCReg(const std::string& name) {
