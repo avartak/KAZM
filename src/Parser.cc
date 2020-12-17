@@ -11,10 +11,6 @@ namespace kazm {
         gates["__u__"] = std::make_shared<UGate>();
     }
 
-    bool Parser::isReg(const std::string& name) {
-        return isCReg(name) || isQReg(name);
-    }
-
     bool Parser::isCReg(const std::string& name) {
         return cregs.find(name) != cregs.end();
     }
