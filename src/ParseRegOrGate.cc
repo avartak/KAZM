@@ -5,11 +5,47 @@
 
 namespace kazm {
 
-    std::size_t Parser::parseGateDefinition(std::size_t it) throw (Exception) {
+    std::size_t Parser::parseReg(std::size_t it) throw (Exception) {
+
+        DataType rt;
+        if (parseToken(T_QREG, it)) rt = data_quantum;
+        else if (parseToken(T_CREG, it)) rt = data_classical;
+        else return 0;
+
+        if (!parseToken(T_ID, it+1) || !parseToken('[', it+2) || !parseToken(T_NNINTEGER, it+3) || !parseToken(']', it+4) || !parseToken(';', it+5)) return 0;
+
+        const std::string& name = tokens[it+1].value;
+        if (isCReg(name)) throw Exception(files.back()->filename, tokens[it+1].line, tokens[it+1].value + " has been previously defined as a classical register");
+        if (isQReg(name)) throw Exception(files.back()->filename, tokens[it+1].line, tokens[it+1].value + " has been previously defined as a quantum register");
+        if (isGate(name)) throw Exception(files.back()->filename, tokens[it+1].line, tokens[it+1].value + " has been previously defined as a gate");
+
+        uint64_t sz = strtoull(tokens[it+3].value.c_str(), nullptr, 0);
+        if (errno == ERANGE) throw Exception(files.back()->filename, tokens[it+3].line, "Register size out of range");
+        if (sz == 0) throw Exception(files.back()->filename, tokens[it+3].line, "Register size cannot be 0");
+
+        if (rt == data_classical) {
+            if (clbit_space + sz < clbit_space) throw Exception(files.back()->filename, tokens[it+3].line, "Total size of bit space exceeds limit");
+            cregs[name] = std::make_shared<Register>(data_classical, name, sz, clbit_space);
+            clbit_space += sz;
+        }
+        else {
+            if (qubit_space + sz < qubit_space) throw Exception(files.back()->filename, tokens[it+3].line, "Total size of qubit space exceeds limit");
+            qregs[name] = std::make_shared<Register>(data_quantum, name, sz, qubit_space);
+            qubit_space += sz;
+        }
+
+        return 6;
+
+    }
+
+    std::size_t Parser::parseGate(std::size_t it) throw (Exception) {
 
         std::size_t n = 0;
 
-        if (!parseToken(T_GATE, it)) return 0;
+        bool opaque = false;
+
+        if (!parseToken(T_GATE, it) && !parseToken(T_OPAQUE, it)) return 0;
+        if (parseToken(T_OPAQUE, it)) opaque = true;
         n++;
         if (!parseToken(T_ID, it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect identifier after opaque keyword");
         auto gate_name = tokens[it+n].value;
@@ -62,6 +98,13 @@ namespace kazm {
         if (qubit_list.size() == 0) throw Exception(files.back()->filename, tokens[it+n].line, "Expect at least one qubit argument"); 
 
         auto gate = std::make_shared<Gate>(gate_name, param_list, qubit_list);
+
+        if (opaque) {
+            if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of opaque declaration");
+            n++;
+            gates[gate_name] = std::make_shared<Gate>(gate_name, param_list, qubit_list);
+            return n;
+        }
 
         if (!parseToken('{', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \'{\'");
         n++;

@@ -44,13 +44,10 @@ namespace kazm {
         n = parseInclude(it);
         if (n > 0)  return n;
 
-        n = parseRegDeclaration(it);
+        n = parseReg(it);
         if (n > 0)  return n;
 
-        n = parseOpaqueDeclaration(it);
-        if (n > 0)  return n;
-
-        n = parseGateDefinition(it);
+        n = parseGate(it);
         if (n > 0)  return n;
 
         n = parseProgramStatement(it);
