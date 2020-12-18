@@ -27,13 +27,15 @@ namespace kazm {
             if (!parseToken(T_NNINTEGER, it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect integer after \'if (" + cr + " == \'");
             std::string num = tokens[it+n].value;
             n++;
+            if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' at the end of \'if\' condition");
+            n++;
             program.bstack.push_back(cregs[cr]);
             condition.first = program.bstack.size() - 1;
             condition.second = num;
             isConditioned = true;
         }
 
-        else if (parseToken(T_MEASURE, it+n)) {
+        if (parseToken(T_MEASURE, it+n)) {
             n++;
             std::shared_ptr<Data> qubit;
             std::shared_ptr<Data> clbit;

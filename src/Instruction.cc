@@ -143,7 +143,7 @@ namespace kazm {
 
     std::string IfInst::str() {
         std::stringstream ss;
-        ss << inst->str() << " if " << caller->bstack[creg]->name() << " equals " << num;
+        ss << inst->str() << " if " << caller->bstack[creg]->name() << " = " << num;
         return ss.str();
     }
 
