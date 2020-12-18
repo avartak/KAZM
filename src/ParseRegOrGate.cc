@@ -209,6 +209,7 @@ namespace kazm {
             if (!parseToken(',', it+n)) return n;
             n++;
             if (!parseToken(T_ID, it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a qubit after \',\'");
+            qid = tokens[it+n].value;
             if (qmap.find(qid) == qmap.end()) throw Exception(files.back()->filename, tokens[it+n].line, "Unknown qubit argument");
             for (std::size_t i = 0; i < qidxv.size(); i++) {
                 if (qidxv[i] == qmap[qid]) throw Exception(files.back()->filename, tokens[it+n].line, "Qubit argument " + qid + " is repeated");

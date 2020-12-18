@@ -1,7 +1,6 @@
 OPENQASM 2.0;
 
-include "test.inc";
+include "qelib1.inc";
 
+qreg q[10];
 creg c[10];
-
-gate u3(theta,phi,lambda) q { U(theta,phi,lambda) q; }

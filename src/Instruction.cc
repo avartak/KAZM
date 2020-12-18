@@ -118,6 +118,8 @@ namespace kazm {
             ss << " ";
         }
 
+        if (params.size() == 0) return ss.str();
+
         ss << "using parameters ";
         for (std::size_t i = 0; i < params.size(); i++) {
             auto p = caller->pstack[params[i]];

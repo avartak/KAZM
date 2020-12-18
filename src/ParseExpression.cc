@@ -138,7 +138,7 @@ namespace kazm {
             m = parseExp(it+n, prog, e);
             if (m == 0 || !e) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after \'(\'");
             n += m;
-            if (!parseToken(')', it)) throw Exception(files.back()->filename, tokens[it+n].line, "Missing \')\'");
+            if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Missing \')\'");
             n++;
             exp = std::move(e);
             return n;
@@ -155,7 +155,7 @@ namespace kazm {
             m = parseExp(it+n, prog, e);
             if (m == 0 || !e) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after \'(\'");
             n += m;
-            if (!parseToken(')', it)) throw Exception(files.back()->filename, tokens[it+n].line, "Missing \')\'");
+            if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Missing \')\'");
             n++;
             exp = std::make_shared<UnaryExpression>(UnaryExpression::GetType(unary_str), e);
             return n;
