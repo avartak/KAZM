@@ -16,19 +16,19 @@ namespace kazm {
         return _name;
     }
 
-    DataType Register::type() {
+    DataType Register::type() throw (Exception) {
         return _type;
     }
 
-    std::size_t Register::size() {
+    std::size_t Register::size() throw (Exception) {
         return _size;
     }
 
-    std::size_t Register::offset() {
+    std::size_t Register::offset() throw (Exception) {
         return _offset;
     }
 
-    bool Register::isReg() {
+    bool Register::isReg() throw (Exception) {
         return true;
     }
 

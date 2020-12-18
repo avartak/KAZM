@@ -2,15 +2,15 @@
 
 namespace kazm {
 
-    bool Data::isBit() {
+    bool Data::isBit() throw (Exception) {
         return !isReg();
     }
 
-    bool Data::isClassical() {
+    bool Data::isClassical() throw (Exception) {
         return type() == data_classical;
     }
 
-    bool Data::isQuantum() {
+    bool Data::isQuantum() throw (Exception) {
         return type() == data_quantum;
     }
 }

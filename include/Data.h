@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include <Exception.h>
+
 namespace kazm {
 
     enum DataType {
@@ -15,14 +17,14 @@ namespace kazm {
         virtual ~Data() = default;
 
         virtual std::string name() = 0;
-        virtual DataType type() = 0;
-        virtual std::size_t size() = 0;
-        virtual std::size_t offset() = 0;
+        virtual DataType type() throw (Exception) = 0;
+        virtual std::size_t size() throw (Exception)= 0;
+        virtual std::size_t offset() throw (Exception) = 0;
 
-        virtual bool isReg() = 0;
-        virtual bool isBit();
-        virtual bool isClassical();
-        virtual bool isQuantum();
+        virtual bool isReg() throw (Exception) = 0;
+        virtual bool isBit() throw (Exception);
+        virtual bool isClassical() throw (Exception);
+        virtual bool isQuantum() throw (Exception);
     };
 
 }

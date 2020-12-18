@@ -3,6 +3,7 @@
 #include <Gate.h>
 #include <Instruction.h>
 #include <Parameter.h>
+#include <Argument.h>
 
 namespace kazm {
 
@@ -16,6 +17,7 @@ namespace kazm {
         for (std::size_t i = 0; i < param_names.size(); i++) param_map[param_names[i]] = i;
         for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
         for (std::size_t i = 0; i < param_names.size(); i++) pstack.push_back(std::make_shared<Parameter>(param_names[i]));
+        for (std::size_t i = 0; i < qubit_names.size(); i++) bstack.push_back(std::make_shared<Argument>(qubit_names[i]));
 
     }
 
@@ -38,34 +40,7 @@ namespace kazm {
         if (instructions.size() > 0) {
             ss << " {\n";
             for (std::size_t i = 0; i < instructions.size(); i++) {
-                ss << "    ";
-                if (instructions[i]->type == instruction_call) {
-                    auto call = dynamic_cast<CallInst*>(instructions[i].get());
-                    ss << "call gate " << call->gate->name; 
-                    ss << "(";
-                    for (std::size_t j = 0; j < call->params.size(); j++) {
-                        ss << pstack[call->params[j]]->str();
-                        if (j != call->params.size()-1) ss << ",";
-                        ss << " ";
-                    } 
-                    ss << ") ";
-                    for (std::size_t j = 0; j < call->bits.size(); j++) {
-                        ss << qubit_names[call->bits[j]];
-                        if (j != call->bits.size()-1) ss << ",";
-                        ss << " ";
-                    } 
-                    ss << "\n";
-                }
-                else if (instructions[i]->type == instruction_barrier) {
-                    auto barr = dynamic_cast<BarrierInst*>(instructions[i].get());
-                    ss << "barrier on ";
-                    for (std::size_t j = 0; j < barr->bits.size(); j++) {
-                        ss << qubit_names[barr->bits[j]];
-                        if (j != barr->bits.size()-1) ss << ",";
-                        ss << " ";
-                    }
-                    ss << "\n";
-                }
+                ss << "    " << instructions[i]->str() << std::endl;
             }
             ss << "}";
         }
@@ -83,7 +58,12 @@ namespace kazm {
             auto par = dynamic_cast<Parameter*>(pstack[i].get());
             par->value = prog.pstack[p[i]];
         }
-        for (std::size_t i = 0; i < b.size(); i++) bstack.push_back(prog.bstack[b[i]]);
+        for (std::size_t i = 0; i < b.size(); i++) {
+            auto arg = dynamic_cast<Argument*>(bstack[i].get());
+            auto caller_arg = dynamic_cast<Argument*>(prog.bstack[b[i]].get());
+            if (caller_arg == nullptr) arg->set(prog.bstack[b[i]]);
+            arg->set(caller_arg->arg());
+        }
 
         for (std::size_t i = 0; i < instructions.size(); i++) instructions[i]->execute();
 
@@ -91,7 +71,10 @@ namespace kazm {
             auto par = dynamic_cast<Parameter*>(pstack[i].get());
             par->value.reset();
         }
-        bstack.clear();
+        for (std::size_t i = 0; i < b.size(); i++) {
+            auto arg = dynamic_cast<Argument*>(bstack[i].get());
+            arg->reset();
+        }
     }
 
 }

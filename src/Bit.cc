@@ -12,19 +12,19 @@ namespace kazm {
         return _reg->name();
     }
 
-    DataType Bit::type() {
+    DataType Bit::type() throw (Exception) {
         return _reg->type();
     }
 
-    std::size_t Bit::size() {
+    std::size_t Bit::size() throw (Exception) {
         return 1;
     }
 
-    std::size_t Bit::offset() {
+    std::size_t Bit::offset() throw (Exception) {
         return _reg->offset() + _index;
     }
 
-    bool Bit::isReg() {
+    bool Bit::isReg() throw (Exception) {
         return false;
     }
 

@@ -20,12 +20,19 @@ namespace kazm {
 
     std::string BarrierInst::str() {
         std::stringstream ss;
+        ss << "barrier on ";
         for (std::size_t i = 0; i < bits.size(); i++) {
             auto b = caller->bstack[bits[i]];
-            ss << "barrier on qubit ";
-            if (b->isBit()) ss << dynamic_cast<Bit*>(b.get())->index() << " of ";
-            ss << " register " << b->name() << std::endl;
+            ss << b->name();
+            try {
+                if (b->isBit()) ss << "[" << dynamic_cast<Bit*>(b.get())->index() << "]";
+            }
+            catch (const kazm::Exception& e) {
+            }
+            if (i != bits.size()-1) ss << ",";
+            ss << " ";
         }
+        ss << std::endl;
         return ss.str();
     }
 
@@ -98,12 +105,15 @@ namespace kazm {
     std::string CallInst::str() {
         std::stringstream ss;
 
-        ss << "run gate " << gate->name << " on ";
+        ss << "call gate " << gate->name << " on ";
         for (std::size_t i = 0; i < bits.size(); i++) {
             auto qb = caller->bstack[bits[i]];
-            ss << "qubit ";
-            if (qb->isBit()) ss << dynamic_cast<Bit*>(qb.get())->index() << " of ";
-            ss << " register" << qb->name() << std::endl;
+            ss << qb->name();
+            try {
+                if (qb->isBit()) ss << "[" << dynamic_cast<Bit*>(qb.get())->index() << "]";
+            }
+            catch (const kazm::Exception& e) {
+            }
             if (i != bits.size()-1) ss << ",";
             ss << " ";
         }

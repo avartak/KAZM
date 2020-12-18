@@ -20,10 +20,10 @@ namespace kazm {
             virtual ~Register() = default;
 
             virtual std::string name() override;
-            virtual DataType type() override;
-            virtual std::size_t size() override;
-            virtual std::size_t offset() override;
-            virtual bool isReg() override;
+            virtual DataType type() throw (Exception) override;
+            virtual std::size_t size() throw (Exception) override;
+            virtual std::size_t offset() throw (Exception) override;
+            virtual bool isReg() throw (Exception) override;
 
             virtual std::string str();
     };

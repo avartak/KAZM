@@ -1,22 +1,22 @@
-#ifndef BIT_H
-#define BIT_H
+#ifndef ARGUMENT_H
+#define ARGUMENT_H
 
-#include <memory>
 #include <string>
+#include <memory>
 
 #include <Data.h>
-#include <Register.h>
 
 namespace kazm {
 
-    struct Bit : public Data {
+    struct Argument : Data {
 
         private:
-            std::shared_ptr<Register> _reg;
-            std::size_t _index;
+            std::string _name;
+            std::shared_ptr<Data> _arg;
 
         public:
-            Bit(const std::shared_ptr<Register>&, std::size_t);
+            Argument(const std::string&);
+            Argument(const std::string&, const std::shared_ptr<Data>&);
 
             virtual std::string name() override;
             virtual DataType type() throw (Exception) override;
@@ -24,8 +24,9 @@ namespace kazm {
             virtual std::size_t offset() throw (Exception) override;
             virtual bool isReg() throw (Exception) override;
 
-            std::size_t index();
-            std::shared_ptr<Register> reg();
+            std::shared_ptr<Data> arg();
+            void set(const std::shared_ptr<Data>&);
+            void reset();            
 
     };
 
