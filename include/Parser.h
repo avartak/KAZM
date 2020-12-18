@@ -62,7 +62,7 @@ namespace kazm {
         std::size_t parseQubitReg(std::size_t, std::shared_ptr<Data>&) throw (Exception);
         std::size_t parseBitReg(std::size_t, std::shared_ptr<Data>&) throw (Exception);
         std::size_t parseQubitRegList(std::size_t, std::vector<std::size_t>&) throw (Exception);
-        bool checkQubitRegList(const std::vector<std::size_t>&);
+        void checkQubitRegList(std::size_t, const std::vector<std::size_t>&);
 
     };
 

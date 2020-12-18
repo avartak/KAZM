@@ -117,10 +117,10 @@ namespace kazm {
             std::size_t m = parseQubitRegList(it+n, qidxv);
             if (qidxv.size() != gate->nqubits) {
                 std::stringstream ss;
-                ss << gate->name << " gate expects " << gate->nparams << " qubits/registers, " << qidxv.size() << " provided";
+                ss << gate->name << " gate expects " << gate->nqubits << " qubits/registers, " << qidxv.size() << " provided";
                 throw Exception(files.back()->filename, tokens[it+n].line, ss.str());
             }
-            if (!checkQubitRegList(qidxv)) throw Exception(files.back()->filename, tokens[it+n].line, "Overlapping qubits for gate " + gname);
+            checkQubitRegList(it+n, qidxv);
             n += m;
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of call to gate " + gname);
             n++;
@@ -142,7 +142,7 @@ namespace kazm {
 
         if (!parseToken(T_ID, it)) return 0;
         const std::string& reg = tokens[it].value;
-        if (!isCReg(reg)) return 0;
+        if (!isQReg(reg)) return 0;
         n++;
 
         if (parseToken('[', it+n)) {
@@ -216,7 +216,7 @@ namespace kazm {
 
     }
 
-    bool Parser::checkQubitRegList(const std::vector<std::size_t>& qidxv) {
+    void Parser::checkQubitRegList(std::size_t it, const std::vector<std::size_t>& qidxv) {
 
         std::vector<std::shared_ptr<Data> > regs;
         std::vector<std::shared_ptr<Data> > bits;
@@ -230,28 +230,26 @@ namespace kazm {
         std::size_t reg_size = 0;
         if (regs.size() > 0) reg_size = regs[0]->size();
         for (std::size_t i = 1; i < regs.size(); i++) {
-            if (regs[i]->size() != reg_size) return false;
+            if (regs[i]->size() != reg_size) return throw Exception(files.back()->filename, tokens[it].line, "Register arguments must have the same size");
         }
 
         for (std::size_t i = 0; i < regs.size(); i++) {
             for (std::size_t j = i+1; j < regs.size(); j++) {
-                if (regs[i]->offset() == regs[j]->offset()) return false;
+                if (regs[i]->offset() == regs[j]->offset()) throw Exception(files.back()->filename, tokens[it].line, "Registers used in arguments must be unique");
             }
         }
 
         for (std::size_t i = 0; i < bits.size(); i++) {
             for (std::size_t j = i+1; j < bits.size(); j++) {
-                if (bits[i]->offset() == bits[j]->offset()) return false;
+                if (bits[i]->offset() == bits[j]->offset()) throw Exception(files.back()->filename, tokens[it].line, "Qubit arguments must be unique");
             }
         }
 
         for (std::size_t i = 0; i < bits.size(); i++) {
             for (std::size_t j = 0; j < regs.size(); j++) {
-                if (bits[i]->name() == regs[j]->name()) return false;
+                if (bits[i]->name() == regs[j]->name()) throw Exception(files.back()->filename, tokens[it].line, "Register " + regs[j]->name() + " overlaps with a qubit argument");
             }
         }
-
-        return false;
 
     }
 }
