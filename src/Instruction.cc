@@ -52,13 +52,11 @@ namespace kazm {
         auto qb = caller->bstack[q];
         auto cb = caller->bstack[c];
 
-        ss << "measure qubit ";
-        if (qb->isBit()) ss << dynamic_cast<Bit*>(qb.get())->index() << " of ";
-        ss << " register " << qb->name();
+        ss << "measure " << qb->name();
+        if (qb->isBit()) ss << "[" << dynamic_cast<Bit*>(qb.get())->index() << "]";
 
-        ss << " in ";
-        if (cb->isBit()) ss << "bit " << dynamic_cast<Bit*>(cb.get())->index() << " of ";
-        ss << " classical register " << cb->name() << std::endl;
+        ss << " in " << cb->name();
+        if (cb->isBit()) ss << "[" << dynamic_cast<Bit*>(cb.get())->index() << "]";
 
         return ss.str();
     }
@@ -77,9 +75,9 @@ namespace kazm {
 
         auto qb = caller->bstack[q];
 
-        ss << "reset qubit ";
-        if (qb->isBit()) ss << dynamic_cast<Bit*>(qb.get())->index() << " of ";
-        ss << " register " << qb->name() << std::endl;
+        ss << "reset ";
+        if (qb->isReg()) ss << "register " << qb->name();
+        if (qb->isBit()) ss << "qubit " << qb->name() << "[" << dynamic_cast<Bit*>(qb.get())->index() << "]";
 
         return ss.str();
     }

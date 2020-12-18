@@ -40,9 +40,10 @@ namespace kazm {
             std::size_t m = parseQubitReg(it+n, qubit);
             if (m == 0 || !qubit || !qubit->isQuantum()) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a qubit/register after \'measure\'");
             n += m;
-            if (!parseToken(T_YIELDS, it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect integer after \'->\' after qubit(s) to measure");
+            if (!parseToken(T_YIELDS, it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \'->\' after qubit(s) to measure");
+            n++;
             m = parseBitReg(it+n, clbit);
-            if (m == 0 || !clbit == !clbit->isClassical()) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a bit/register after \'->\'");
+            if (m == 0 || !clbit || !clbit->isClassical()) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a bit/register after \'->\'");
             n += m;
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of measure statement");
             n++;
@@ -62,8 +63,8 @@ namespace kazm {
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of measure statement");
             n++;
 
-            program.bstack.push_back(qubit);
             inst = std::make_shared<ResetInst>(program, program.bstack.size());
+            program.bstack.push_back(qubit);
         }
 
         else if (parseToken(T_BARRIER, it+n)) {
