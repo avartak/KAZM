@@ -87,7 +87,7 @@ namespace kazm {
         for (const std::size_t& i : b) bits.push_back(i);
     }
 
-    CallInst::CallInst(const Program& c, const std::shared_ptr<Gate>& g, const std::vector<std::size_t>& b, const std::vector<std::size_t>& p):
+    CallInst::CallInst(const Program& c, const std::shared_ptr<Gate>& g, const std::vector<std::size_t>& p, const std::vector<std::size_t>& b):
         Instruction(instruction_call, c),
         gate(g)
     {
@@ -99,7 +99,6 @@ namespace kazm {
         std::stringstream ss;
 
         ss << "run gate " << gate->name << " on ";
-
         for (std::size_t i = 0; i < bits.size(); i++) {
             auto qb = caller->bstack[bits[i]];
             ss << "qubit ";

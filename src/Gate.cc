@@ -19,13 +19,6 @@ namespace kazm {
 
     }
 
-    Gate::Gate(const std::string& n, std::size_t p, std::size_t b):
-        name(n),
-        nparams(p),
-        nqubits(b)
-    {
-    }
-
     std::string Gate::str() {
 
         std::stringstream ss;

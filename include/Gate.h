@@ -21,7 +21,6 @@ namespace kazm {
         std::map<std::string, std::size_t> qubit_map;
 
         Gate(const std::string&, const std::vector<std::string>& pn, const std::vector<std::string>& bn);
-        Gate(const std::string&, std::size_t, std::size_t);
 
         virtual ~Gate() = default;
 
