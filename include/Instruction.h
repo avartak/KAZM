@@ -7,6 +7,7 @@
 
 #include <Program.h>
 #include <Gate.h>
+#include <BigInt.h>
 
 namespace kazm {
 
@@ -81,7 +82,7 @@ namespace kazm {
     struct IfInst : public Instruction {
 
         std::size_t creg;
-        std::string num;
+        BigInt num;
         std::shared_ptr<Instruction> inst;
 
         IfInst(const Program&, std::size_t, const std::string&, const std::shared_ptr<Instruction>&);        
