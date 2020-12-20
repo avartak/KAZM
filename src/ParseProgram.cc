@@ -123,7 +123,6 @@ namespace kazm {
                 ss << gate->name << " gate expects " << gate->nqubits << " qubits/registers, " << qidxv.size() << " provided";
                 throw Exception(files.back()->filename, tokens[it+n].line, ss.str());
             }
-            checkQubitRegList(it+n, qidxv);
             n += m;
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of call to gate " + gname);
             n++;
@@ -206,7 +205,7 @@ namespace kazm {
 
         while (true) {
 
-            if (!parseToken(',', it+n)) return n; 
+            if (!parseToken(',', it+n)) break; 
             n++;
             std::shared_ptr<Data> data;
             m = parseQubitReg(it+n, data);
@@ -216,10 +215,6 @@ namespace kazm {
             n += m;
 
         }
-
-    }
-
-    void Parser::checkQubitRegList(std::size_t it, const std::vector<std::size_t>& qidxv) {
 
         std::vector<std::shared_ptr<Data> > regs;
         std::vector<std::shared_ptr<Data> > bits;
@@ -233,7 +228,7 @@ namespace kazm {
         std::size_t reg_size = 0;
         if (regs.size() > 0) reg_size = regs[0]->size();
         for (std::size_t i = 1; i < regs.size(); i++) {
-            if (regs[i]->size() != reg_size) return throw Exception(files.back()->filename, tokens[it].line, "Register arguments must have the same size");
+            if (regs[i]->size() != reg_size) throw Exception(files.back()->filename, tokens[it].line, "Register arguments must have the same size");
         }
 
         for (std::size_t i = 0; i < regs.size(); i++) {
@@ -254,5 +249,8 @@ namespace kazm {
             }
         }
 
+        return n;
+
     }
+
 }
