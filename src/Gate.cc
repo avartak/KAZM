@@ -62,7 +62,7 @@ namespace kazm {
             auto arg = dynamic_cast<Argument*>(bstack[i].get());
             auto caller_arg = dynamic_cast<Argument*>(prog.bstack[b[i]].get());
             if (caller_arg == nullptr) arg->set(prog.bstack[b[i]]);
-            arg->set(caller_arg->arg());
+            else arg->set(caller_arg->arg());
         }
 
         for (std::size_t i = 0; i < instructions.size(); i++) instructions[i]->execute();
