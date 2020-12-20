@@ -5,11 +5,11 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <utility>
 
 #include <Exception.h>
 #include <SourceFile.h>
 #include <Token.h>
-#include <Header.h>
 #include <Data.h>
 #include <Register.h>
 #include <Gate.h>
@@ -22,7 +22,7 @@ namespace kazm {
         std::vector<std::shared_ptr<SourceFile> > files;
         std::vector<Token> tokens;
 
-        std::shared_ptr<Header> header;
+        std::shared_ptr<std::pair<std::size_t, std::size_t> > qasm_version;
 
         std::size_t clbit_space;
         std::size_t qubit_space;
