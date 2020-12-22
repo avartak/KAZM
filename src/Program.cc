@@ -1,9 +1,6 @@
 #include <sstream>
 
 #include <Program.h>
-#include <Data.h>
-#include <Expression.h>
-#include <Constant.h>
 #include <Instruction.h>
 
 namespace kazm {
@@ -18,9 +15,6 @@ namespace kazm {
         }
         ss << "}\n";
 
-        pstack.clear();
-        bstack.clear();
-
         return ss.str();
     }
 
@@ -29,9 +23,6 @@ namespace kazm {
         for (std::size_t i = 0; i < instructions.size(); i++) {
             instructions[i]->execute();
         }
-
-        pstack.clear();
-        bstack.clear();
 
     }
 

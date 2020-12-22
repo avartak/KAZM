@@ -6,23 +6,22 @@
 
 namespace kazm {
 
-    Instruction::Instruction(InstructionType t, const Program& c):
-        type(t),
-        caller(&c)
+    Instruction::Instruction(InstructionType t):
+        type(t)
     {
     }
 
-    BarrierInst::BarrierInst(const Program& c, const std::vector<std::size_t>& q):
-        Instruction(instruction_barrier, c)
+    BarrierInst::BarrierInst(const std::vector<std::shared_ptr<Data> >& qv):
+        Instruction(instruction_barrier)
     {
-        for (const std::size_t& i : q) bits.push_back(i);
+        for (const std::shared_ptr<Data>& q : qv) bits.push_back(q);
     }
 
     std::string BarrierInst::str() {
         std::stringstream ss;
         ss << "barrier on ";
         for (std::size_t i = 0; i < bits.size(); i++) {
-            auto b = caller->bstack[bits[i]];
+            auto b = bits[i];
             ss << b->name();
             try {
                 if (b->isBit()) ss << "[" << dynamic_cast<Bit*>(b.get())->index() << "]";
@@ -39,8 +38,8 @@ namespace kazm {
     void BarrierInst::execute() {
     }
 
-    MeasureInst::MeasureInst(const Program& c, std::size_t q_, std::size_t c_):
-        Instruction(instruction_measure, c),
+    MeasureInst::MeasureInst(const std::shared_ptr<Data>& q_, const std::shared_ptr<Data>& c_):
+        Instruction(instruction_measure),
         q(q_),
         c(c_)
     {
@@ -49,14 +48,11 @@ namespace kazm {
     std::string MeasureInst::str() {
         std::stringstream ss;
 
-        auto qb = caller->bstack[q];
-        auto cb = caller->bstack[c];
+        ss << "measure " << q->name();
+        if (q->isBit()) ss << "[" << dynamic_cast<Bit*>(q.get())->index() << "]";
 
-        ss << "measure " << qb->name();
-        if (qb->isBit()) ss << "[" << dynamic_cast<Bit*>(qb.get())->index() << "]";
-
-        ss << " in " << cb->name();
-        if (cb->isBit()) ss << "[" << dynamic_cast<Bit*>(cb.get())->index() << "]";
+        ss << " in " << c->name();
+        if (c->isBit()) ss << "[" << dynamic_cast<Bit*>(c.get())->index() << "]";
 
         return ss.str();
     }
@@ -64,8 +60,8 @@ namespace kazm {
     void MeasureInst::execute() {
     }
 
-    ResetInst::ResetInst(const Program& c, std::size_t q_):
-        Instruction(instruction_reset, c),
+    ResetInst::ResetInst(const std::shared_ptr<Data>& q_):
+        Instruction(instruction_reset),
         q(q_)
     {
     }
@@ -73,11 +69,9 @@ namespace kazm {
     std::string ResetInst::str() {
         std::stringstream ss;
 
-        auto qb = caller->bstack[q];
-
         ss << "reset ";
-        if (qb->isReg()) ss << "register " << qb->name();
-        if (qb->isBit()) ss << "qubit " << qb->name() << "[" << dynamic_cast<Bit*>(qb.get())->index() << "]";
+        if (q->isReg()) ss << "register " << q->name();
+        if (q->isBit()) ss << "qubit " << q->name() << "[" << dynamic_cast<Bit*>(q.get())->index() << "]";
 
         return ss.str();
     }
@@ -85,19 +79,19 @@ namespace kazm {
     void ResetInst::execute() {
     }
 
-    CallInst::CallInst(const Program& c, const std::shared_ptr<Gate>& g, const std::vector<std::size_t>& b):
-        Instruction(instruction_call, c),
+    CallInst::CallInst(const std::shared_ptr<Gate>& g, const std::vector<std::shared_ptr<Data> >& b):
+        Instruction(instruction_call),
         gate(g)
     {
-        for (const std::size_t& i : b) bits.push_back(i);
+        for (const std::shared_ptr<Data>& i : b) bits.push_back(i);
     }
 
-    CallInst::CallInst(const Program& c, const std::shared_ptr<Gate>& g, const std::vector<std::size_t>& p, const std::vector<std::size_t>& b):
-        Instruction(instruction_call, c),
+    CallInst::CallInst(const std::shared_ptr<Gate>& g, const std::vector<std::shared_ptr<Expression> >& pv, const std::vector<std::shared_ptr<Data> >& bv):
+        Instruction(instruction_call),
         gate(g)
     {
-        for (const std::size_t& i : b) bits.push_back(i);
-        for (const std::size_t& i : p) params.push_back(i);
+        for (const std::shared_ptr<Data>& b : bv) bits.push_back(b);
+        for (const std::shared_ptr<Expression>& p : pv) params.push_back(p);
     }
 
     std::string CallInst::str() {
@@ -105,7 +99,7 @@ namespace kazm {
 
         ss << "call gate " << gate->name << " on ";
         for (std::size_t i = 0; i < bits.size(); i++) {
-            auto qb = caller->bstack[bits[i]];
+            auto qb = bits[i];
             ss << qb->name();
             try {
                 if (qb->isBit()) ss << "[" << dynamic_cast<Bit*>(qb.get())->index() << "]";
@@ -120,7 +114,7 @@ namespace kazm {
 
         ss << "using parameters ";
         for (std::size_t i = 0; i < params.size(); i++) {
-            auto p = caller->pstack[params[i]];
+            auto p = params[i];
             ss << p->str();
             if (i != params.size()-1) ss << ",";
             ss << " ";
@@ -130,11 +124,11 @@ namespace kazm {
     }
 
     void CallInst::execute() {
-        gate->execute(*caller, params, bits);
+        gate->execute(params, bits);
     }
 
-    IfInst::IfInst(const Program& c, std::size_t cr, const std::string& n, const std::shared_ptr<Instruction>& i):
-        Instruction(instruction_if, c),
+    IfInst::IfInst(const std::shared_ptr<Data>& cr, const std::string& n, const std::shared_ptr<Instruction>& i):
+        Instruction(instruction_if),
         creg(cr),
         num(n),
         inst(i)
@@ -143,7 +137,7 @@ namespace kazm {
 
     std::string IfInst::str() {
         std::stringstream ss;
-        ss << inst->str() << " if " << caller->bstack[creg]->name() << " = " << num.str;
+        ss << inst->str() << " if " << creg->name() << " = " << num.str;
         return ss.str();
     }
 

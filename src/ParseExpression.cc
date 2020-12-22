@@ -1,9 +1,10 @@
 #include <Parser.h>
+#include <Expression.h>
 #include <Constant.h>
 
 namespace kazm {
 
-    std::size_t Parser::parseExpList(std::size_t it, Program& prog, std::vector<std::size_t>& ev) throw (Exception) {
+    std::size_t Parser::parseExpList(std::size_t it, const Program& prog, std::vector<std::shared_ptr<Expression> >& ev) throw (Exception) {
 
         std::size_t n = 0;
         std::size_t m = 0;
@@ -11,8 +12,7 @@ namespace kazm {
         std::shared_ptr<Expression> exp;
         if ( (m = parseExp(it+n, prog, exp)) == 0 || !exp) return 0;
         n += m;
-        ev.push_back(prog.pstack.size());
-        prog.pstack.push_back(std::move(exp));
+        ev.push_back(exp);
         exp.reset();
 
         while (true) {
@@ -21,15 +21,14 @@ namespace kazm {
             n++;
             if ( (m = parseExp(it+n, prog, exp)) == 0 || !exp) throw Exception(files.back()->filename, tokens[it+n].line, "Expecting a parameter/expression after \',\'");
             n += m;
-            ev.push_back(prog.pstack.size());
-            prog.pstack.push_back(std::move(exp));
+            ev.push_back(exp);
             exp.reset();
 
         }
 
     }
 
-    std::size_t Parser::parseExp(std::size_t it, Program& prog, std::shared_ptr<Expression>& exp) throw (Exception) {
+    std::size_t Parser::parseExp(std::size_t it, const Program& prog, std::shared_ptr<Expression>& exp) throw (Exception) {
 
         std::size_t n = 0;
         std::size_t m = 0;
@@ -61,7 +60,7 @@ namespace kazm {
 
     } 
 
-    std::size_t Parser::parseBinaryRHS(std::size_t it, Program& prog, const std::string& preop, std::shared_ptr<Expression>& rhs) throw (Exception) {
+    std::size_t Parser::parseBinaryRHS(std::size_t it, const Program& prog, const std::string& preop, std::shared_ptr<Expression>& rhs) throw (Exception) {
 
         std::size_t n = 0;
         std::size_t m = 0;
@@ -98,12 +97,10 @@ namespace kazm {
 
     }
 
-    std::size_t Parser::parseUnary(std::size_t it, Program& prog, std::shared_ptr<Expression>& exp) throw (Exception) {
+    std::size_t Parser::parseUnary(std::size_t it, const Program& prog, std::shared_ptr<Expression>& exp) throw (Exception) {
 
         std::size_t n = 0;
         std::size_t m = 0;
-
-        std::map<std::string, std::size_t> pmap;
 
         if (parseToken(T_PI, it) || parseToken(T_REAL, it) || parseToken(T_NNINTEGER, it)) {
             exp = std::make_shared<Constant>(tokens[it].value);
@@ -113,13 +110,14 @@ namespace kazm {
         else if (parseToken(T_ID, it)) {
             std::string pname = tokens[it].value;
             try {
-                auto gate = dynamic_cast<Gate&>(prog);
-                pmap = gate.param_map;
+                auto gate = dynamic_cast<const Gate&>(prog);
+                auto pmap = gate.param_map;
+                if (pmap.find(pname) == pmap.end()) throw Exception(files.back()->filename, tokens[it+n].line, "Unknown parameter " + pname);
+                exp = gate.params[pmap[pname]];
             }
             catch (const std::bad_cast& e) {
+                throw Exception(files.back()->filename, tokens[it+n].line, "Unknown parameter " + pname);
             }
-            if (pmap.find(pname) == pmap.end()) throw Exception(files.back()->filename, tokens[it+n].line, "Unknown parameter " + pname);
-            exp = prog.pstack[pmap[pname]];
             return 1;         
         }
 

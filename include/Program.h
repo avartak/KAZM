@@ -6,14 +6,9 @@
 
 namespace kazm {
 
-    struct Data;
-    struct Expression;
     struct Instruction;
 
     struct Program {
-
-        std::vector<std::shared_ptr<Data> > bstack;
-        std::vector<std::shared_ptr<Expression> > pstack;
 
         std::vector<std::shared_ptr<Instruction> > instructions;
 

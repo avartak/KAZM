@@ -114,13 +114,13 @@ namespace kazm {
 
             if (parseToken(T_BARRIER, it+n)) {
                 n++;
-                std::vector<std::size_t> qidxv;
-                std::size_t m = parseQubitList(it+n, *gate, qidxv);
-                if (m == 0 || qidxv.size() == 0) throw Exception(files.back()->filename, tokens[it+n].line, "Expect one or more qubits after \'barrier\'");
+                std::vector<std::shared_ptr<Data> > qv;
+                std::size_t m = parseQubitList(it+n, *gate, qv);
+                if (m == 0 || qv.size() == 0) throw Exception(files.back()->filename, tokens[it+n].line, "Expect one or more qubits after \'barrier\'");
                 n += m;
                 if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of barrier statement");
                 n++;
-                gate->instructions.push_back(std::make_shared<BarrierInst>(*gate, qidxv));
+                gate->instructions.push_back(std::make_shared<BarrierInst>(qv));
             }
 
             else if (parseToken(T_ID, it+n) || parseToken(T_U, it+n) || parseToken(T_CX, it+n)) {
@@ -131,8 +131,8 @@ namespace kazm {
                 n++;
                 if (!isGate(gt_name)) throw Exception(files.back()->filename, tokens[it+n].line, gname + " is not a gate");
                 auto gt = gates[gt_name];
-                std::vector<std::size_t> expv;
-                std::vector<std::size_t> qidxv;
+                std::vector<std::shared_ptr<Expression> > expv;
+                std::vector<std::shared_ptr<Data> > qv;
                 if (gt->nparams == 0) {
                     if (gate_name == "CX") {
                         if (parseToken('(', it+n)) {
@@ -160,16 +160,16 @@ namespace kazm {
                     if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' after parameter list for gate " + gname);
                     n++;
                 }
-                std::size_t m = parseQubitList(it+n, *gate, qidxv);
-                if (qidxv.size() != gt->nqubits) {
+                std::size_t m = parseQubitList(it+n, *gate, qv);
+                if (qv.size() != gt->nqubits) {
                     std::stringstream ss;
-                    ss << gt->name << " gate expects " << gt->nqubits << " qubits, " << qidxv.size() << " provided";
+                    ss << gt->name << " gate expects " << gt->nqubits << " qubits, " << qv.size() << " provided";
                     throw Exception(files.back()->filename, tokens[it+n].line, ss.str());
                 }
                 n += m;
                 if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of call to gate " + gname);
                 n++;
-                gate->instructions.push_back(std::make_shared<CallInst>(*gate, gt, expv, qidxv));
+                gate->instructions.push_back(std::make_shared<CallInst>(gt, expv, qv));
             }
 
             else break;
@@ -180,10 +180,10 @@ namespace kazm {
 
         if (gate->instructions.size() == 0) {
             for (std::size_t i = 0; i < gate->nqubits; i++) {
-                std::vector<std::size_t> expv;
-                std::vector<std::size_t> qidxv;
-                qidxv.push_back(i);
-                gate->instructions.push_back(std::make_shared<CallInst>(*gate, gates["__identity__"], expv, qidxv));
+                std::vector<std::shared_ptr<Expression> > expv;
+                std::vector<std::shared_ptr<Data> > qv;
+                qv.push_back(gate->qubits[i]);
+                gate->instructions.push_back(std::make_shared<CallInst>(gates["__identity__"], expv, qv));
             }
         }
 
@@ -193,10 +193,11 @@ namespace kazm {
 
     }
 
-    std::size_t Parser::parseQubitList(std::size_t it, const Gate& gate, std::vector<std::size_t>& qidxv) throw (Exception) {
+    std::size_t Parser::parseQubitList(std::size_t it, const Gate& gate, std::vector<std::shared_ptr<Data> >& qv) throw (Exception) {
 
         std::size_t n = 0;
         auto qmap = gate.qubit_map;
+        std::vector<std::size_t> qidxv; 
 
         if (!parseToken(T_ID, it)) return 0;
         auto qid = tokens[it].value;
@@ -206,7 +207,7 @@ namespace kazm {
 
         while (true) {
 
-            if (!parseToken(',', it+n)) return n;
+            if (!parseToken(',', it+n)) break;
             n++;
             if (!parseToken(T_ID, it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a qubit after \',\'");
             qid = tokens[it+n].value;
@@ -218,6 +219,12 @@ namespace kazm {
             n++;
 
         }
+
+        for (std::size_t i = 0; i < qidxv.size(); i++) {
+            qv.push_back(gate.qubits[qidxv[i]]);
+        }
+
+        return n;
 
     }
 

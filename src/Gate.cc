@@ -16,8 +16,8 @@ namespace kazm {
         for (std::size_t i = 0; i < bn.size(); i++) qubit_names.push_back(bn[i]);
         for (std::size_t i = 0; i < param_names.size(); i++) param_map[param_names[i]] = i;
         for (std::size_t i = 0; i < qubit_names.size(); i++) qubit_map[qubit_names[i]] = i;
-        for (std::size_t i = 0; i < param_names.size(); i++) pstack.push_back(std::make_shared<Parameter>(param_names[i]));
-        for (std::size_t i = 0; i < qubit_names.size(); i++) bstack.push_back(std::make_shared<Argument>(qubit_names[i]));
+        for (std::size_t i = 0; i < param_names.size(); i++) params.push_back(std::make_shared<Parameter>(param_names[i]));
+        for (std::size_t i = 0; i < qubit_names.size(); i++) qubits.push_back(std::make_shared<Argument>(qubit_names[i]));
 
     }
 
@@ -50,31 +50,21 @@ namespace kazm {
         return ss.str();
     }
         
-    void Gate::execute(const Program& prog, const std::vector<std::size_t>& p, const std::vector<std::size_t>& b) throw (Exception) {
+    void Gate::execute(const std::vector<std::shared_ptr<Expression> >& p, const std::vector<std::shared_ptr<Data> >& b) throw (Exception) {
         if (p.size() != nparams) throw Exception("<Internal error Gate::execute()> Incorrect number of parameters passed to gate " + name);    
         if (b.size() != nqubits) throw Exception("<Internal error Gate::execute()> Incorrect number of qubits passed to gate " + name);
 
-        for (std::size_t i = 0; i < p.size(); i++) {
-            auto par = dynamic_cast<Parameter*>(pstack[i].get());
-            par->value = prog.pstack[p[i]];
-        }
-        for (std::size_t i = 0; i < b.size(); i++) {
-            auto arg = dynamic_cast<Argument*>(bstack[i].get());
-            auto caller_arg = dynamic_cast<Argument*>(prog.bstack[b[i]].get());
-            if (caller_arg == nullptr) arg->set(prog.bstack[b[i]]);
-            else arg->set(caller_arg->arg());
+        for (std::size_t i = 0; i < nparams; i++) params[i]->value = p[i];
+        for (std::size_t i = 0; i < nqubits; i++) {
+            auto caller_arg = dynamic_cast<Argument*>(b[i].get());
+            if (caller_arg == nullptr) qubits[i]->set(b[i]);
+            else qubits[i]->set(caller_arg->arg());
         }
 
         for (std::size_t i = 0; i < instructions.size(); i++) instructions[i]->execute();
 
-        for (std::size_t i = 0; i < p.size(); i++) {
-            auto par = dynamic_cast<Parameter*>(pstack[i].get());
-            par->value.reset();
-        }
-        for (std::size_t i = 0; i < b.size(); i++) {
-            auto arg = dynamic_cast<Argument*>(bstack[i].get());
-            arg->reset();
-        }
+        for (std::size_t i = 0; i < nparams; i++) params[i]->value.reset();
+        for (std::size_t i = 0; i < nqubits; i++) qubits[i]->reset();
     }
 
 }

@@ -5,7 +5,8 @@
 #include <memory>
 #include <string>
 
-#include <Program.h>
+#include <Data.h>
+#include <Expression.h>
 #include <Gate.h>
 #include <BigInt.h>
 
@@ -25,9 +26,8 @@ namespace kazm {
     struct Instruction {
 
         InstructionType type;
-        const Program* caller;
 
-        Instruction(InstructionType, const Program&);
+        Instruction(InstructionType);
 
         virtual ~Instruction() = default;
 
@@ -37,9 +37,9 @@ namespace kazm {
 
     struct BarrierInst : public Instruction {
 
-        std::vector<std::size_t> bits;
+        std::vector<std::shared_ptr<Data> > bits;
 
-        BarrierInst(const Program&, const std::vector<std::size_t>&);
+        BarrierInst(const std::vector<std::shared_ptr<Data> >&);
 
         std::string str() override;
         void execute() override;
@@ -47,10 +47,10 @@ namespace kazm {
 
     struct MeasureInst : public Instruction {
 
-        std::size_t q;
-        std::size_t c;
+        std::shared_ptr<Data> q;
+        std::shared_ptr<Data> c;
 
-        MeasureInst(const Program&, std::size_t, std::size_t);
+        MeasureInst(const std::shared_ptr<Data>&, const std::shared_ptr<Data>&);
 
         std::string str() override;
         void execute() override;
@@ -58,9 +58,9 @@ namespace kazm {
 
     struct ResetInst : public Instruction {
 
-        std::size_t q;
+        std::shared_ptr<Data> q;
 
-        ResetInst(const Program&, std::size_t);
+        ResetInst(const std::shared_ptr<Data>&);
 
         std::string str() override;
         void execute() override;
@@ -69,11 +69,11 @@ namespace kazm {
     struct CallInst : public Instruction {
 
         std::shared_ptr<Gate> gate;
-        std::vector<std::size_t> params;
-        std::vector<std::size_t> bits;
+        std::vector<std::shared_ptr<Expression> > params;
+        std::vector<std::shared_ptr<Data> > bits;
 
-        CallInst(const Program&, const std::shared_ptr<Gate>&, const std::vector<std::size_t>&);
-        CallInst(const Program&, const std::shared_ptr<Gate>&, const std::vector<std::size_t>&, const std::vector<std::size_t>&);
+        CallInst(const std::shared_ptr<Gate>&, const std::vector<std::shared_ptr<Data> >&);
+        CallInst(const std::shared_ptr<Gate>&, const std::vector<std::shared_ptr<Expression> >&, const std::vector<std::shared_ptr<Data> >&);
 
         std::string str() override;
         void execute() override;
@@ -81,11 +81,11 @@ namespace kazm {
 
     struct IfInst : public Instruction {
 
-        std::size_t creg;
+        std::shared_ptr<Data> creg;
         BigInt num;
         std::shared_ptr<Instruction> inst;
 
-        IfInst(const Program&, std::size_t, const std::string&, const std::shared_ptr<Instruction>&);        
+        IfInst(const std::shared_ptr<Data>&, const std::string&, const std::shared_ptr<Instruction>&);        
 
         std::string str() override;
         void execute() override;

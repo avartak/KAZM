@@ -2,7 +2,9 @@
 
 #include <Parser.h>
 #include <Instruction.h>
+#include <Data.h>
 #include <Bit.h>
+#include <Expression.h>
 
 namespace kazm {
 
@@ -12,7 +14,7 @@ namespace kazm {
 
         std::shared_ptr<Instruction> inst;
 
-        std::pair<std::size_t, std::string> condition;
+        std::pair<std::shared_ptr<Data>, std::string> condition;
         bool isConditioned = false;
         if (parseToken(T_IF, it+n)) {
             n++;
@@ -29,8 +31,7 @@ namespace kazm {
             n++;
             if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' at the end of \'if\' condition");
             n++;
-            program.bstack.push_back(cregs[cr]);
-            condition.first = program.bstack.size() - 1;
+            condition.first = cregs[cr];
             condition.second = num;
             isConditioned = true;
         }
@@ -49,11 +50,7 @@ namespace kazm {
             n += m;
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of measure statement");
             n++;
-
-            std::size_t nb = program.bstack.size();
-            program.bstack.push_back(qubit);
-            program.bstack.push_back(clbit);
-            inst = std::make_shared<MeasureInst>(program, nb, nb+1);
+            inst = std::make_shared<MeasureInst>(qubit, clbit);
         }
 
         else if (parseToken(T_RESET, it+n)) {
@@ -64,20 +61,18 @@ namespace kazm {
             n += m;
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of measure statement");
             n++;
-
-            inst = std::make_shared<ResetInst>(program, program.bstack.size());
-            program.bstack.push_back(qubit);
+            inst = std::make_shared<ResetInst>(qubit);
         }
 
         else if (parseToken(T_BARRIER, it+n)) {
             n++;
-            std::vector<std::size_t> qidxv;
-            std::size_t m = parseQubitRegList(it+n, qidxv);
-            if (m == 0 || qidxv.size() == 0) throw Exception(files.back()->filename, tokens[it+n].line, "Expect one or more qubit/registers after \'barrier\'");
+            std::vector<std::shared_ptr<Data> > qv;
+            std::size_t m = parseQubitRegList(it+n, qv);
+            if (m == 0 || qv.size() == 0) throw Exception(files.back()->filename, tokens[it+n].line, "Expect one or more qubit/registers after \'barrier\'");
             n += m;
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of barrier statement");
             n++;
-            inst = std::make_shared<BarrierInst>(program, qidxv);
+            inst = std::make_shared<BarrierInst>(qv);
         }
 
         else if (parseToken(T_ID, it+n) || parseToken(T_U, it+n) || parseToken(T_CX, it+n)) {
@@ -88,8 +83,8 @@ namespace kazm {
             n++;
             if (!isGate(gate_name)) throw Exception(files.back()->filename, tokens[it+n].line, gname + " is not a gate");
             auto gate = gates[gate_name];
-            std::vector<std::size_t> expv;
-            std::vector<std::size_t> qidxv;
+            std::vector<std::shared_ptr<Expression> > expv;
+            std::vector<std::shared_ptr<Data> > qv;
             if (gate->nparams == 0) {
                 if (gate_name == "CX") {
                     if (parseToken('(', it+n)) {
@@ -117,22 +112,22 @@ namespace kazm {
                 if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \')\' after parameter list for gate " + gname);
                 n++;
             }
-            std::size_t m = parseQubitRegList(it+n, qidxv);
-            if (qidxv.size() != gate->nqubits) {
+            std::size_t m = parseQubitRegList(it+n, qv);
+            if (qv.size() != gate->nqubits) {
                 std::stringstream ss;
-                ss << gate->name << " gate expects " << gate->nqubits << " qubits/registers, " << qidxv.size() << " provided";
+                ss << gate->name << " gate expects " << gate->nqubits << " qubits/registers, " << qv.size() << " provided";
                 throw Exception(files.back()->filename, tokens[it+n].line, ss.str());
             }
             n += m;
             if (!parseToken(';', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \';\' at the end of call to gate " + gname);
             n++;
-            inst = std::make_shared<CallInst>(program, gate, expv, qidxv);
+            inst = std::make_shared<CallInst>(gate, expv, qv);
         }
 
         if ( isConditioned && !inst) throw Exception(files.back()->filename, tokens[it+n].line, "if statement not followed by a valid instruction");
         if (!isConditioned && !inst) return 0;
         if (!isConditioned &&  inst) program.instructions.push_back(inst);
-        if ( isConditioned &&  inst) program.instructions.push_back(std::make_shared<IfInst>(program, condition.first, condition.second, inst));
+        if ( isConditioned &&  inst) program.instructions.push_back(std::make_shared<IfInst>(condition.first, condition.second, inst));
 
         return n;
 
@@ -192,15 +187,14 @@ namespace kazm {
 
     }
 
-    std::size_t Parser::parseQubitRegList(std::size_t it, std::vector<std::size_t>& qidxv) throw (Exception) {
+    std::size_t Parser::parseQubitRegList(std::size_t it, std::vector<std::shared_ptr<Data> >& qv) throw (Exception) {
 
         std::size_t n = 0;
 
         std::shared_ptr<Data> data;
         std::size_t m = parseQubitReg(it+n, data);
-        if (m == 0) return 0;
-        qidxv.push_back(program.bstack.size());
-        program.bstack.push_back(data);
+        if (m == 0 || !data) return 0;
+        qv.push_back(data);
         n += m;
 
         while (true) {
@@ -209,9 +203,8 @@ namespace kazm {
             n++;
             std::shared_ptr<Data> data;
             m = parseQubitReg(it+n, data);
-            if (m == 0) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a qubit/register after \',\'");
-            qidxv.push_back(program.bstack.size());
-            program.bstack.push_back(data);
+            if (m == 0 || !data) throw Exception(files.back()->filename, tokens[it+n].line, "Expect a qubit/register after \',\'");
+            qv.push_back(data);
             n += m;
 
         }
@@ -219,8 +212,8 @@ namespace kazm {
         std::vector<std::shared_ptr<Data> > regs;
         std::vector<std::shared_ptr<Data> > bits;
 
-        for (std::size_t i = 0; i < qidxv.size(); i++) {
-            auto data = program.bstack[qidxv[i]];
+        for (std::size_t i = 0; i < qv.size(); i++) {
+            auto data = qv[i];
             if (data->isReg()) regs.push_back(data);
             else bits.push_back(data);
         }
