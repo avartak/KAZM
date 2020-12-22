@@ -13,7 +13,12 @@ namespace kazm {
         else if (parseToken(T_CREG, it)) rt = data_classical;
         else return 0;
 
-        if (!parseToken(T_ID, it+1) || !parseToken('[', it+2) || !parseToken(T_NNINTEGER, it+3) || !parseToken(']', it+4) || !parseToken(';', it+5)) return 0;
+        if (!parseToken(T_ID, it+1) && rt == data_quantum) throw Exception(files.back()->filename, tokens[it+1].line, "Expect identifier name after \'qreg\'");
+        if (!parseToken(T_ID, it+1) && rt == data_classical) throw Exception(files.back()->filename, tokens[it+1].line, "Expect identifier name after \'creg\'");
+        if (!parseToken('[', it+2)) throw Exception(files.back()->filename, tokens[it+1].line, "Expect \'[\' after register identifier");
+        if (!parseToken(T_NNINTEGER, it+3)) throw Exception(files.back()->filename, tokens[it+1].line, "Expect register size integer after \'[\'");
+        if (!parseToken(']', it+4)) throw Exception(files.back()->filename, tokens[it+1].line, "Expect \']\' after register size");
+        if (!parseToken(';', it+5)) throw Exception(files.back()->filename, tokens[it+1].line, "Expect \';\' at the end of register declaration");
 
         const std::string& name = tokens[it+1].value;
         if (isCReg(name)) throw Exception(files.back()->filename, tokens[it+1].line, tokens[it+1].value + " has been previously defined as a classical register");
