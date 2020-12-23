@@ -31,7 +31,6 @@ namespace kazm {
         T_U,
         T_CX,
         T_INCLUDE,
-        T_UNDEF
     };
     
     struct Token {
@@ -39,8 +38,6 @@ namespace kazm {
         int type;
         std::string value;
         int line;
-
-        Token();
 
         Token(int, const std::string&, int);
     };

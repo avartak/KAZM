@@ -272,7 +272,7 @@ kazm::Token kazm::Scanner::scan(void)
 
             break;
           case 43: // rule src/lexer.l:91: . :
-{ RETURN(T_UNDEF); }
+{ throw Exception(filename(), lineno(), "Invalid token"); }
             break;
         }
   }

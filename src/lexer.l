@@ -88,7 +88,7 @@ W   [ \t\v\n\f\r]
 [a-z][a-zA-Z_0-9]*                  { RETURN(T_ID); }
 \"[^\"]+\"                          { RETURN(T_FILENAME); }
 
-.                                   { RETURN(T_UNDEF); }
+.                                   { throw Exception(filename(), lineno(), "Invalid token"); }
 <<EOF>>                             { RETURN(0); }
 
 %%
