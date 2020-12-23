@@ -40,7 +40,7 @@ namespace kazm {
 
     void Parser::parse(const std::string& filename) throw (Exception) {
     
-        files.push_back(std::make_shared<SourceFile>(filename));
+        files.push_back(std::make_shared<Scanner>(filename));
         
         std::size_t s = tokens.size();
         
@@ -88,9 +88,9 @@ namespace kazm {
         auto minor_str = version.substr(n+1, version.length()-(n+1));
 
         uint64_t major_ver = strtoull(major_str.c_str(), nullptr, 0);
-        if (errno == ERANGE) throw Exception(files.back()->filename, tokens[it].line, "Major version in the header out of range");
+        if (errno == ERANGE) throw Exception(files.back()->filename(), tokens[it].line, "Major version in the header out of range");
         uint64_t minor_ver = strtoull(minor_str.c_str(), nullptr, 0);
-        if (errno == ERANGE) throw Exception(files.back()->filename, tokens[it].line, "Minor version in the header out of range");
+        if (errno == ERANGE) throw Exception(files.back()->filename(), tokens[it].line, "Minor version in the header out of range");
 
         qasm_version = std::make_shared<std::pair<std::size_t, std::size_t> >(major_ver, minor_ver);
 
@@ -113,7 +113,7 @@ namespace kazm {
         n = parseProgramStatement(it);
         if (n > 0)  return n;
 
-        throw Exception(files.back()->filename, tokens[it].line, "Unknown statement");
+        throw Exception(files.back()->filename(), tokens[it].line, "Unknown statement");
     }
 
     std::size_t Parser::parseInclude(std::size_t it) throw (Exception) {

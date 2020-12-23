@@ -8,6 +8,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#define REFLEX_OPTION_ctorarg             const std::string& f
 #define REFLEX_OPTION_header_file         "include/Scanner.h"
 #define REFLEX_OPTION_lex                 scan
 #define REFLEX_OPTION_lexer               Scanner
@@ -23,7 +24,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
+#include <string>
+#include <fstream>
 #include <Token.h>
+#include <Exception.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,14 +55,31 @@
 namespace kazm {
 
 class Scanner : public reflex::AbstractLexer<reflex::Matcher> {
+
+ private:
+  std::string _filename;
+  std::ifstream _file;
+
+ public:
+  std::string filename() {
+    return _filename;
+  }
+
  public:
   typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
   Scanner(
+      const std::string& f,
       const reflex::Input& input = reflex::Input(),
       std::ostream&        os    = std::cout)
     :
       AbstractBaseLexer(input, os)
   {
+
+    _filename = f;
+    _file = std::move(std::ifstream(f));
+    if (!_file.is_open()) throw Exception("Unable to open " + f);
+    in() = _file;
+
   }
   static const int INITIAL = 0;
   virtual kazm::Token scan(void);
@@ -121,136 +142,136 @@ kazm::Token kazm::Scanner::scan(void)
               out().put(matcher().input());
             }
             break;
-          case 1: // rule src/lexer.l:21: {W}+ :
+          case 1: // rule src/lexer.l:45: {W}+ :
             break;
-          case 2: // rule src/lexer.l:22: "//".* :
+          case 2: // rule src/lexer.l:46: "//".* :
 
 
             break;
-          case 3: // rule src/lexer.l:24: "OPENQASM"{S}+{I}"."{I}{S}*";" :
+          case 3: // rule src/lexer.l:48: "OPENQASM"{S}+{I}"."{I}{S}*";" :
 { RETURN(T_HEADER); }
 
             break;
-          case 4: // rule src/lexer.l:26: "{" :
+          case 4: // rule src/lexer.l:50: "{" :
 { RETURN('{'); }
             break;
-          case 5: // rule src/lexer.l:27: "}" :
+          case 5: // rule src/lexer.l:51: "}" :
 { RETURN('}'); }
             break;
-          case 6: // rule src/lexer.l:28: "[" :
+          case 6: // rule src/lexer.l:52: "[" :
 { RETURN('['); }
             break;
-          case 7: // rule src/lexer.l:29: "]" :
+          case 7: // rule src/lexer.l:53: "]" :
 { RETURN(']'); }
             break;
-          case 8: // rule src/lexer.l:30: "(" :
+          case 8: // rule src/lexer.l:54: "(" :
 { RETURN('('); }
             break;
-          case 9: // rule src/lexer.l:31: ")" :
+          case 9: // rule src/lexer.l:55: ")" :
 { RETURN(')'); }
             break;
-          case 10: // rule src/lexer.l:32: "," :
+          case 10: // rule src/lexer.l:56: "," :
 { RETURN(','); }
             break;
-          case 11: // rule src/lexer.l:33: ";" :
+          case 11: // rule src/lexer.l:57: ";" :
 { RETURN(';'); }
             break;
-          case 12: // rule src/lexer.l:34: "+" :
+          case 12: // rule src/lexer.l:58: "+" :
 { RETURN('+'); }
             break;
-          case 13: // rule src/lexer.l:35: "-" :
+          case 13: // rule src/lexer.l:59: "-" :
 { RETURN('-'); }
             break;
-          case 14: // rule src/lexer.l:36: "*" :
+          case 14: // rule src/lexer.l:60: "*" :
 { RETURN('*'); }
             break;
-          case 15: // rule src/lexer.l:37: "/" :
+          case 15: // rule src/lexer.l:61: "/" :
 { RETURN('/'); }
             break;
-          case 16: // rule src/lexer.l:38: "^" :
+          case 16: // rule src/lexer.l:62: "^" :
 { RETURN('^'); }
             break;
-          case 17: // rule src/lexer.l:39: "->" :
+          case 17: // rule src/lexer.l:63: "->" :
 { RETURN(T_YIELDS); }
             break;
-          case 18: // rule src/lexer.l:40: "==" :
+          case 18: // rule src/lexer.l:64: "==" :
 { RETURN(T_EQUALS); }
             break;
-          case 19: // rule src/lexer.l:41: "if" :
+          case 19: // rule src/lexer.l:65: "if" :
 { RETURN(T_IF); }
             break;
-          case 20: // rule src/lexer.l:42: "pi" :
+          case 20: // rule src/lexer.l:66: "pi" :
 { RETURN(T_PI); }
             break;
-          case 21: // rule src/lexer.l:43: "sin" :
+          case 21: // rule src/lexer.l:67: "sin" :
 { RETURN(T_SIN); }
             break;
-          case 22: // rule src/lexer.l:44: "cos" :
+          case 22: // rule src/lexer.l:68: "cos" :
 { RETURN(T_COS); }
             break;
-          case 23: // rule src/lexer.l:45: "tan" :
+          case 23: // rule src/lexer.l:69: "tan" :
 { RETURN(T_TAN); }
             break;
-          case 24: // rule src/lexer.l:46: "exp" :
+          case 24: // rule src/lexer.l:70: "exp" :
 { RETURN(T_EXP); }
             break;
-          case 25: // rule src/lexer.l:47: "ln" :
+          case 25: // rule src/lexer.l:71: "ln" :
 { RETURN(T_LN); }
             break;
-          case 26: // rule src/lexer.l:48: "sqrt" :
+          case 26: // rule src/lexer.l:72: "sqrt" :
 { RETURN(T_SQRT); }
             break;
-          case 27: // rule src/lexer.l:49: "qreg" :
+          case 27: // rule src/lexer.l:73: "qreg" :
 { RETURN(T_QREG); }
             break;
-          case 28: // rule src/lexer.l:50: "creg" :
+          case 28: // rule src/lexer.l:74: "creg" :
 { RETURN(T_CREG); }
             break;
-          case 29: // rule src/lexer.l:51: "gate" :
+          case 29: // rule src/lexer.l:75: "gate" :
 { RETURN(T_GATE); }
             break;
-          case 30: // rule src/lexer.l:52: "opaque" :
+          case 30: // rule src/lexer.l:76: "opaque" :
 { RETURN(T_OPAQUE); }
             break;
-          case 31: // rule src/lexer.l:53: "barrier" :
+          case 31: // rule src/lexer.l:77: "barrier" :
 { RETURN(T_BARRIER); }
             break;
-          case 32: // rule src/lexer.l:54: "measure" :
+          case 32: // rule src/lexer.l:78: "measure" :
 { RETURN(T_MEASURE); }
             break;
-          case 33: // rule src/lexer.l:55: "reset" :
+          case 33: // rule src/lexer.l:79: "reset" :
 { RETURN(T_RESET); }
             break;
-          case 34: // rule src/lexer.l:56: "U" :
+          case 34: // rule src/lexer.l:80: "U" :
 { RETURN(T_U); }
             break;
-          case 35: // rule src/lexer.l:57: "CX" :
+          case 35: // rule src/lexer.l:81: "CX" :
 { RETURN(T_CX); }
             break;
-          case 36: // rule src/lexer.l:58: "include" :
+          case 36: // rule src/lexer.l:82: "include" :
 { RETURN(T_INCLUDE); }
 
             break;
-          case 37: // rule src/lexer.l:60: {I} :
+          case 37: // rule src/lexer.l:84: {I} :
 { RETURN(T_NNINTEGER); }
             break;
-          case 38: // rule src/lexer.l:61: {D}+{E} :
+          case 38: // rule src/lexer.l:85: {D}+{E} :
 { RETURN(T_REAL); }
             break;
-          case 39: // rule src/lexer.l:62: {D}+"."{D}*{E}? :
+          case 39: // rule src/lexer.l:86: {D}+"."{D}*{E}? :
 { RETURN(T_REAL); }
             break;
-          case 40: // rule src/lexer.l:63: {D}*"."{D}+{E}? :
+          case 40: // rule src/lexer.l:87: {D}*"."{D}+{E}? :
 { RETURN(T_REAL); }
             break;
-          case 41: // rule src/lexer.l:64: [a-z][a-zA-Z_0-9]* :
+          case 41: // rule src/lexer.l:88: [a-z][a-zA-Z_0-9]* :
 { RETURN(T_ID); }
             break;
-          case 42: // rule src/lexer.l:65: \"[^\"]+\" :
+          case 42: // rule src/lexer.l:89: \"[^\"]+\" :
 { RETURN(T_FILENAME); }
 
             break;
-          case 43: // rule src/lexer.l:67: . :
+          case 43: // rule src/lexer.l:91: . :
 { RETURN(T_UNDEF); }
             break;
         }

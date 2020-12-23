@@ -7,8 +7,32 @@
 %}
 
 %top{
+#include <string>
+#include <fstream>
 #include <Token.h>
+#include <Exception.h>
 }
+
+%class{
+ private:
+  std::string _filename;
+  std::ifstream _file;
+ 
+ public:
+  std::string filename() {
+    return _filename;
+  }
+}
+
+%option ctorarg="const std::string& f"
+
+%init {
+    _filename = f;
+    _file = std::move(std::ifstream(f));
+    if (!_file.is_open()) throw Exception("Unable to open " + f);
+    in() = _file;
+}
+
 
 D   [0-9]
 I   ("0"|[1-9]+{D}*)

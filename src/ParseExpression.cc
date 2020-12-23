@@ -19,7 +19,7 @@ namespace kazm {
 
             if (!parseToken(',', it+n)) return n;
             n++;
-            if ( (m = parseExp(it+n, prog, exp)) == 0 || !exp) throw Exception(files.back()->filename, tokens[it+n].line, "Expecting a parameter/expression after \',\'");
+            if ( (m = parseExp(it+n, prog, exp)) == 0 || !exp) throw Exception(files.back()->filename(), tokens[it+n].line, "Expecting a parameter/expression after \',\'");
             n += m;
             ev.push_back(exp);
             exp.reset();
@@ -52,7 +52,7 @@ namespace kazm {
 
             std::shared_ptr<Expression> rhs;
             m = parseBinaryRHS(it+n, prog, op, rhs);
-            if (m == 0 || !rhs) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after " + op);
+            if (m == 0 || !rhs) throw Exception(files.back()->filename(), tokens[it+n].line, "Unable to parse expression after " + op);
             exp = std::make_shared<BinaryExpression>(BinaryExpression::GetType(op), std::move(exp), std::move(rhs));
             n += m;
 
@@ -89,7 +89,7 @@ namespace kazm {
 
             std::shared_ptr<Expression> r2;
             m = parseBinaryRHS(it+n, prog, op, r2);
-            if (m == 0 || !r2) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after " + op);
+            if (m == 0 || !r2) throw Exception(files.back()->filename(), tokens[it+n].line, "Unable to parse expression after " + op);
             r1 = std::make_shared<BinaryExpression>(BinaryExpression::GetType(op), std::move(r1), std::move(r2));
             n += m;            
 
@@ -112,11 +112,11 @@ namespace kazm {
             try {
                 auto gate = dynamic_cast<const Gate&>(prog);
                 auto pmap = gate.param_map;
-                if (pmap.find(pname) == pmap.end()) throw Exception(files.back()->filename, tokens[it+n].line, "Unknown parameter " + pname);
+                if (pmap.find(pname) == pmap.end()) throw Exception(files.back()->filename(), tokens[it+n].line, "Unknown parameter " + pname);
                 exp = gate.params[pmap[pname]];
             }
             catch (const std::bad_cast& e) {
-                throw Exception(files.back()->filename, tokens[it+n].line, "Unknown parameter " + pname);
+                throw Exception(files.back()->filename(), tokens[it+n].line, "Unknown parameter " + pname);
             }
             return 1;         
         }
@@ -126,7 +126,7 @@ namespace kazm {
             n++;
             std::shared_ptr<Expression> e;
             m = parseUnary(it+n, prog, e);
-            if (m == 0 || !e) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after " + tokens[it].value);
+            if (m == 0 || !e) throw Exception(files.back()->filename(), tokens[it+n].line, "Unable to parse expression after " + tokens[it].value);
             if (op == '+') exp = std::move(e);
             else exp = std::make_shared<UnaryExpression>(unaryop_negate, e);
             return n+m;
@@ -136,9 +136,9 @@ namespace kazm {
             n++;
             std::shared_ptr<Expression> e;
             m = parseExp(it+n, prog, e);
-            if (m == 0 || !e) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after \'(\'");
+            if (m == 0 || !e) throw Exception(files.back()->filename(), tokens[it+n].line, "Unable to parse expression after \'(\'");
             n += m;
-            if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Missing \')\'");
+            if (!parseToken(')', it+n)) throw Exception(files.back()->filename(), tokens[it+n].line, "Missing \')\'");
             n++;
             exp = std::move(e);
             return n;
@@ -149,13 +149,13 @@ namespace kazm {
         {
             std::string unary_str = tokens[it].value;
             n++;
-            if (!parseToken('(', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Expect \'(\' after " + unary_str);
+            if (!parseToken('(', it+n)) throw Exception(files.back()->filename(), tokens[it+n].line, "Expect \'(\' after " + unary_str);
             n++;
             std::shared_ptr<Expression> e;
             m = parseExp(it+n, prog, e);
-            if (m == 0 || !e) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after \'(\'");
+            if (m == 0 || !e) throw Exception(files.back()->filename(), tokens[it+n].line, "Unable to parse expression after \'(\'");
             n += m;
-            if (!parseToken(')', it+n)) throw Exception(files.back()->filename, tokens[it+n].line, "Missing \')\'");
+            if (!parseToken(')', it+n)) throw Exception(files.back()->filename(), tokens[it+n].line, "Missing \')\'");
             n++;
             exp = std::make_shared<UnaryExpression>(UnaryExpression::GetType(unary_str), e);
             return n;

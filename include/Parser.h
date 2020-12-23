@@ -8,7 +8,7 @@
 #include <utility>
 
 #include <Exception.h>
-#include <SourceFile.h>
+#include <Scanner.h>
 #include <Token.h>
 #include <Data.h>
 #include <Register.h>
@@ -19,7 +19,7 @@ namespace kazm {
 
     struct Parser {
 	
-        std::vector<std::shared_ptr<SourceFile> > files;
+        std::vector<std::shared_ptr<Scanner> > files;
         std::vector<Token> tokens;
 
         std::shared_ptr<std::pair<std::size_t, std::size_t> > qasm_version;

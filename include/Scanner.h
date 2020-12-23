@@ -11,6 +11,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+#define REFLEX_OPTION_ctorarg             const std::string& f
 #define REFLEX_OPTION_header_file         "include/Scanner.h"
 #define REFLEX_OPTION_lex                 scan
 #define REFLEX_OPTION_lexer               Scanner
@@ -26,7 +27,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
+#include <string>
+#include <fstream>
 #include <Token.h>
+#include <Exception.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,14 +58,31 @@
 namespace kazm {
 
 class Scanner : public reflex::AbstractLexer<reflex::Matcher> {
+
+ private:
+  std::string _filename;
+  std::ifstream _file;
+
+ public:
+  std::string filename() {
+    return _filename;
+  }
+
  public:
   typedef reflex::AbstractLexer<reflex::Matcher> AbstractBaseLexer;
   Scanner(
+      const std::string& f,
       const reflex::Input& input = reflex::Input(),
       std::ostream&        os    = std::cout)
     :
       AbstractBaseLexer(input, os)
   {
+
+    _filename = f;
+    _file = std::move(std::ifstream(f));
+    if (!_file.is_open()) throw Exception("Unable to open " + f);
+    in() = _file;
+
   }
   static const int INITIAL = 0;
   virtual kazm::Token scan(void);
