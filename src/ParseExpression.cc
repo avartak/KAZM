@@ -122,11 +122,13 @@ namespace kazm {
         }
 
         else if (parseToken('+', it) || parseToken('-', it)) {
+            char op = ( parseToken('+', it) ? '+' : '-' );
             n++;
             std::shared_ptr<Expression> e;
             m = parseUnary(it+n, prog, e);
             if (m == 0 || !e) throw Exception(files.back()->filename, tokens[it+n].line, "Unable to parse expression after " + tokens[it].value);
-            exp = std::move(e);
+            if (op == '+') exp = std::move(e);
+            else exp = std::make_shared<UnaryExpression>(unaryop_negate, e);
             return n+m;
         }
 
